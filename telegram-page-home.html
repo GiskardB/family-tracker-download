@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Configura casa · Family Tracker</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    /* ────────────────────────────────────────────────────────────────
+       Telegram WebApp themable form.
+       Used by the /casa bot command — the bot replies with an inline
+       keyboard "Apri configurazione" that opens this page in the
+       Telegram in-app browser. When the user hits "Salva", the form
+       calls Telegram.WebApp.sendData({...}) which the FamilyTracker
+       device receives as a `web_app_data` Telegram update and applies
+       to the geofence config.
+       Pure HTML/CSS/vanilla JS — no build step, deployable to GitHub
+       Pages as-is.
+       ──────────────────────────────────────────────────────────────── */
+
+    :root {
+      --bg: var(--tg-theme-bg-color, #F7F4EE);
+      --surface: var(--tg-theme-secondary-bg-color, #FFFFFF);
+      --text: var(--tg-theme-text-color, #141A28);
+      --text-mute: var(--tg-theme-hint-color, #6B7388);
+      --accent: var(--tg-theme-button-color, #1B2A4E);
+      --accent-fg: var(--tg-theme-button-text-color, #FFFFFF);
+      --warm: #C97B4E;
+      --line: #E2DED4;
+      --danger: #B83C2E;
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.4;
+    }
+    main {
+      padding: 16px;
+      max-width: 480px;
+      margin: 0 auto;
+      padding-bottom: 96px;
+    }
+    h1 {
+      font-size: 22px;
+      font-weight: 700;
+      margin: 8px 0 4px;
+    }
+    .intro {
+      color: var(--text-mute);
+      font-size: 13px;
+      margin: 0 0 20px;
+    }
+    .card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 14px;
+      border: 1px solid var(--line);
+    }
+    .label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-mute);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 6px;
+    }
+    .input, .select {
+      width: 100%;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      font-family: inherit;
+    }
+    .input:focus, .select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .row {
+      display: flex;
+      gap: 10px;
+    }
+    .row > div { flex: 1; }
+    .results {
+      margin-top: 4px;
+      background: var(--surface);
+      border-radius: 8px;
+      border: 1px solid var(--line);
+      overflow: hidden;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .result-row {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-row:active, .result-row:hover {
+      background: var(--bg);
+    }
+    .status {
+      padding: 10px 12px;
+      color: var(--text-mute);
+      font-size: 13px;
+    }
+    .preview {
+      margin-top: 8px;
+      padding: 10px;
+      background: var(--bg);
+      border-radius: 8px;
+      font-family: ui-monospace, Menlo, monospace;
+      font-size: 12px;
+      color: var(--text-mute);
+    }
+    .radius-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .step-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 22px;
+      border: none;
+      background: var(--accent);
+      color: var(--accent-fg);
+      font-size: 22px;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .step-btn:disabled { opacity: 0.4; }
+    .radius-display {
+      flex: 1;
+      text-align: center;
+    }
+    .radius-num {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    .radius-unit {
+      font-size: 14px;
+      color: var(--text-mute);
+      margin-left: 4px;
+    }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .toggle-row .title {
+      font-weight: 600;
+    }
+    .toggle-row .sub {
+      font-size: 12px;
+      color: var(--text-mute);
+    }
+    /* iOS-style toggle */
+    .switch {
+      position: relative;
+      width: 50px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+    .switch input { opacity: 0; width: 0; height: 0; }
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: #ccc;
+      transition: 0.2s;
+      border-radius: 28px;
+    }
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 22px; width: 22px;
+      left: 3px; bottom: 3px;
+      background-color: white;
+      transition: 0.2s;
+      border-radius: 50%;
+    }
+    input:checked + .slider { background-color: var(--accent); }
+    input:checked + .slider:before { transform: translateX(22px); }
+
+    .save-bar {
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+      background: var(--bg);
+      border-top: 1px solid var(--line);
+      display: flex;
+      gap: 10px;
+    }
+    .btn-primary {
+      flex: 1;
+      padding: 14px;
+      background: var(--accent);
+      color: var(--accent-fg);
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn-primary:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .error {
+      color: var(--danger);
+      font-size: 13px;
+      margin-top: 6px;
+    }
+    .ok-note {
+      color: #1E8E5F;
+      font-size: 13px;
+      margin-top: 6px;
+    }
+  </style>
+</head>
+<body>
+<main>
+  <h1>Configura casa</h1>
+  <p class="intro">
+    Imposta la posizione, il raggio della zona casa e la fascia notturna in cui ricevere
+    gli avvisi se il dispositivo esce di casa.
+  </p>
+
+  <!-- Address card -->
+  <div class="card">
+    <div class="label">Indirizzo *</div>
+    <input id="address" class="input" type="text" autocomplete="off"
+           placeholder="Es. Via Roma 1, Torino"
+           autocapitalize="words" spellcheck="false">
+    <div id="results" class="results" style="display:none"></div>
+    <div id="preview" class="preview" style="display:none"></div>
+  </div>
+
+  <!-- Radius card -->
+  <div class="card">
+    <div class="label">Raggio della zona casa *</div>
+    <div class="radius-row">
+      <button class="step-btn" id="radius-minus" aria-label="Diminuisci">−</button>
+      <div class="radius-display">
+        <span class="radius-num" id="radius-num">100</span>
+        <span class="radius-unit">metri</span>
+      </div>
+      <button class="step-btn" id="radius-plus" aria-label="Aumenta">+</button>
+    </div>
+  </div>
+
+  <!-- Night window card -->
+  <div class="card">
+    <div class="label">Fascia notturna *</div>
+    <div class="row">
+      <div>
+        <div class="label">Dalle</div>
+        <input id="start" class="input" type="time" value="22:00" required>
+      </div>
+      <div>
+        <div class="label">Alle</div>
+        <input id="end" class="input" type="time" value="06:00" required>
+      </div>
+    </div>
+  </div>
+
+  <!-- Enabled toggle -->
+  <div class="card">
+    <div class="toggle-row">
+      <div>
+        <div class="title">Geofence attivo</div>
+        <div class="sub">Riceverai un avviso se uscirai di casa nella fascia notturna</div>
+      </div>
+      <label class="switch">
+        <input id="enabled" type="checkbox" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <div id="form-error" class="error" style="display:none"></div>
+</main>
+
+<div class="save-bar">
+  <button id="save-btn" class="btn-primary" type="button">Salva e applica</button>
+</div>
+
+<script>
+  // ────────────────────────────────────────────────────────────────
+  // Telegram WebApp bootstrap
+  // ────────────────────────────────────────────────────────────────
+  const tg = window.Telegram && window.Telegram.WebApp;
+  if (tg) {
+    tg.ready();
+    tg.expand();
+  }
+
+  // ────────────────────────────────────────────────────────────────
+  // Address autocomplete (Photon — same backend the app uses)
+  // ────────────────────────────────────────────────────────────────
+  const $addr = document.getElementById('address');
+  const $results = document.getElementById('results');
+  const $preview = document.getElementById('preview');
+
+  /** @type {{lat:number,lng:number,displayName:string}|null} */
+  let pickedLocation = null;
+  let searchTimer = null;
+  let abortCtl = null;
+
+  function showResults(items) {
+    $results.innerHTML = '';
+    if (!items || items.length === 0) {
+      $results.style.display = 'none';
+      return;
+    }
+    items.forEach(it => {
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.textContent = it.displayName;
+      row.addEventListener('click', () => pickResult(it));
+      $results.appendChild(row);
+    });
+    $results.style.display = 'block';
+  }
+
+  function showStatus(text) {
+    $results.innerHTML = `<div class="status">${text}</div>`;
+    $results.style.display = 'block';
+  }
+
+  function pickResult(it) {
+    pickedLocation = it;
+    $addr.value = it.displayName;
+    $results.style.display = 'none';
+    $preview.textContent = `📍 ${it.lat.toFixed(5)}, ${it.lng.toFixed(5)}`;
+    $preview.style.display = 'block';
+    clearError();
+  }
+
+  function clearPickedLocation() {
+    pickedLocation = null;
+    $preview.style.display = 'none';
+  }
+
+  async function searchAddress(q) {
+    if (abortCtl) abortCtl.abort();
+    abortCtl = new AbortController();
+    try {
+      const url = `https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6`;
+      const res = await fetch(url, {signal: abortCtl.signal});
+      if (!res.ok) return [];
+      const json = await res.json();
+      const feats = json.features || [];
+      return feats
+        .filter(f => f && f.geometry && f.geometry.coordinates && f.geometry.coordinates.length === 2)
+        .map(f => {
+          const p = f.properties || {};
+          const parts = [];
+          if (p.name) parts.push(p.name);
+          const street = [p.street, p.housenumber].filter(Boolean).join(' ');
+          if (street && street !== p.name) parts.push(street);
+          const city = [p.postcode, p.city].filter(Boolean).join(' ');
+          if (city) parts.push(city);
+          if (p.country) parts.push(p.country);
+          return {
+            displayName: parts.join(' · ') || 'Risultato senza nome',
+            lat: f.geometry.coordinates[1],
+            lng: f.geometry.coordinates[0],
+          };
+        });
+    } catch (e) {
+      if (e && e.name === 'AbortError') return [];
+      return [];
+    }
+  }
+
+  $addr.addEventListener('input', () => {
+    clearPickedLocation();
+    const q = $addr.value.trim();
+    if (searchTimer) clearTimeout(searchTimer);
+    if (q.length < 3) {
+      $results.style.display = 'none';
+      return;
+    }
+    showStatus('Sto cercando…');
+    searchTimer = setTimeout(async () => {
+      const items = await searchAddress(q);
+      if (items.length === 0) {
+        showStatus(`Nessun risultato per «${q}». Prova a essere più specifico.`);
+      } else {
+        showResults(items);
+      }
+    }, 350);
+  });
+
+  // ────────────────────────────────────────────────────────────────
+  // Radius stepper
+  // ────────────────────────────────────────────────────────────────
+  let radius = 100;
+  const $rNum = document.getElementById('radius-num');
+  const $rMinus = document.getElementById('radius-minus');
+  const $rPlus = document.getElementById('radius-plus');
+  function renderRadius() {
+    $rNum.textContent = String(radius);
+    $rMinus.disabled = radius <= 50;
+    $rPlus.disabled = radius >= 2000;
+  }
+  $rMinus.addEventListener('click', () => {
+    radius = Math.max(50, radius - 25);
+    renderRadius();
+  });
+  $rPlus.addEventListener('click', () => {
+    radius = Math.min(2000, radius + 25);
+    renderRadius();
+  });
+  renderRadius();
+
+  // ────────────────────────────────────────────────────────────────
+  // Save handler
+  // ────────────────────────────────────────────────────────────────
+  const $saveBtn = document.getElementById('save-btn');
+  const $err = document.getElementById('form-error');
+  function setError(msg) {
+    $err.textContent = msg;
+    $err.style.display = 'block';
+  }
+  function clearError() {
+    $err.style.display = 'none';
+  }
+
+  $saveBtn.addEventListener('click', () => {
+    clearError();
+    if (!pickedLocation) {
+      setError('Scegli un indirizzo dai suggerimenti.');
+      return;
+    }
+    const start = (document.getElementById('start')).value;
+    const end = (document.getElementById('end')).value;
+    if (!start || !end) {
+      setError('Inserisci sia l\'ora di inizio sia quella di fine della fascia notturna.');
+      return;
+    }
+    const enabled = (document.getElementById('enabled')).checked;
+
+    const payload = {
+      v: 1,
+      kind: 'casa',
+      address: pickedLocation.displayName,
+      lat: pickedLocation.lat,
+      lng: pickedLocation.lng,
+      radius: radius,
+      start: start,
+      end: end,
+      enabled: enabled,
+    };
+    if (tg && typeof tg.sendData === 'function') {
+      try {
+        tg.sendData(JSON.stringify(payload));
+        // The Telegram client closes the WebApp automatically after sendData,
+        // but we explicitly call close() in case the close-on-send behaviour
+        // ever changes.
+        tg.close();
+      } catch (e) {
+        setError('Errore Telegram: ' + (e && e.message ? e.message : e));
+      }
+    } else {
+      // Local debug fallback (opened in a normal browser instead of Telegram).
+      setError('Aperto fuori da Telegram. Dati: ' + JSON.stringify(payload));
+    }
+  });
+
+  // ────────────────────────────────────────────────────────────────
+  // Wire MainButton (the Telegram native primary button at the bottom)
+  // as an alias for the in-page Save button, so it works on every
+  // Telegram theme variant. Optional.
+  // ────────────────────────────────────────────────────────────────
+  if (tg && tg.MainButton) {
+    tg.MainButton.setText('Salva e applica');
+    tg.MainButton.show();
+    tg.MainButton.onClick(() => $saveBtn.click());
+  }
+</script>
+</body>
+</html>

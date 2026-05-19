@@ -1,0 +1,1603 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Family Tracker — The people you love, close. Always.</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="description" content="Family Tracker: a quiet Android app that lets your family check on you through a private Telegram bot. No backend, no constant tracking, no subscription." />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+<template id="__bundler_thumbnail">
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+    <rect width="100" height="100" rx="22" fill="#FBF3E7"/>
+    <circle cx="36" cy="50" r="22" fill="none" stroke="#4A2E1E" stroke-width="8"/>
+    <circle cx="64" cy="50" r="22" fill="none" stroke="#C56A3F" stroke-width="8"/>
+    <path d="M 52.9 64.1 A 22 22 0 0 1 45.3 69.9" stroke="#4A2E1E" stroke-width="8" fill="none"/>
+  </svg>
+</template>
+
+<style>
+  :root {
+    /* Warm cocoa primary (replaces the old cool navy) */
+    --navy: #4A2E1E;
+    --navy-deep: #2E1B10;
+    --navy-soft: #6B452F;
+    --navy-tint: #F1E5D8;
+    /* Terracotta secondary, a touch deeper and richer */
+    --warm: #C56A3F;
+    --warm-deep: #8E4824;
+    --warm-soft: #ECB58D;
+    --warm-tint: #FBEEDF;
+    /* Peachy-cream surfaces */
+    --bg: #FBF3E7;
+    --bg-alt: #F4E7D2;
+    --surface: #FFFAF1;
+    --ink: #2A1A11;
+    --ink-soft: #5A4133;
+    --ink-mute: #8A6F5C;
+    --ink-faint: #BBA48E;
+    --line: #E8D9C2;
+    --line-soft: #F1E5D2;
+    --ok: #5B8C4A;
+    --danger: #B83C2E;
+    --sans: 'Manrope', system-ui, -apple-system, sans-serif;
+    --serif: 'Instrument Serif', Georgia, serif;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --container: 1240px;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg); color: var(--ink);
+    font-family: var(--sans); font-size: 16px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+  .container { max-width: var(--container); margin: 0 auto; padding: 0 28px; }
+  .display { font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -1.2px; line-height: 1; color: var(--ink); }
+  .display em { color: var(--warm-deep); font-style: italic; }
+  .eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 1.6px;
+    text-transform: uppercase; color: var(--warm-deep);
+    margin-bottom: 18px; display: inline-flex; align-items: center; gap: 10px;
+  }
+  .eyebrow::before { content: ''; width: 24px; height: 1px; background: var(--warm-deep); display: inline-block; }
+  .lede { font-size: 19px; color: var(--ink-soft); line-height: 1.6; }
+
+  /* NAV */
+  nav {
+    position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 14px 0;
+    background: rgba(247, 244, 238, 0.7);
+    backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.3s, padding 0.3s;
+  }
+  nav.scrolled { border-bottom-color: var(--line); padding: 10px 0; }
+  .nav-inner {
+    display: flex; align-items: center; justify-content: space-between;
+    max-width: var(--container); margin: 0 auto; padding: 0 28px; gap: 16px;
+  }
+  .brand { display: inline-flex; align-items: center; gap: 10px; }
+  .brand-text { display: inline-flex; align-items: baseline; gap: 4px; line-height: 1; }
+  .brand-text .family { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--ink); letter-spacing: -0.3px; }
+  .brand-text .tracker { font-family: var(--sans); font-weight: 700; font-size: 16px; color: var(--ink); letter-spacing: -0.6px; }
+  .nav-links { display: flex; gap: 28px; align-items: center; font-size: 14px; font-weight: 500; color: var(--ink-soft); }
+  .nav-links a:hover { color: var(--warm-deep); }
+  .nav-cta {
+    background: var(--warm); color: #fff !important;
+    padding: 9px 18px; border-radius: 999px;
+    font-size: 13.5px; font-weight: 600;
+    transition: background 0.2s, box-shadow 0.2s;
+    display: inline-flex; align-items: center; gap: 7px;
+    box-shadow: 0 4px 12px rgba(197,106,63,0.22);
+  }
+  .nav-cta:hover { background: var(--warm-deep); }
+
+  /* Language switcher */
+  .lang-switch {
+    display: inline-flex; align-items: center;
+    background: rgba(74,46,30,0.06);
+    border-radius: 999px; padding: 3px;
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.4px;
+  }
+  .lang-switch button {
+    background: transparent; border: none; padding: 5px 10px; border-radius: 999px;
+    color: var(--ink-mute); font-family: inherit; font-size: inherit; font-weight: inherit;
+    text-transform: uppercase; cursor: pointer; transition: background 0.18s, color 0.18s;
+  }
+  .lang-switch button.active { background: var(--navy); color: #fff; }
+  .lang-switch button:hover:not(.active) { color: var(--ink); }
+
+  @media (max-width: 760px) {
+    .nav-links a:not(.nav-cta) { display: none; }
+    .lang-switch { order: -1; }
+  }
+
+  /* HERO */
+  .hero { padding: 160px 0 100px; position: relative; overflow: hidden; }
+  .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
+  @media (max-width: 960px) {
+    .hero { padding: 140px 0 60px; }
+    .hero-grid { grid-template-columns: 1fr; gap: 48px; }
+  }
+  .hero-title { font-size: clamp(46px, 7.2vw, 96px); }
+  .hero-lede { margin-top: 28px; max-width: 500px; font-size: 19px; color: var(--ink-soft); line-height: 1.6; }
+  .hero-ctas { margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 9px;
+    padding: 14px 26px; border-radius: 999px;
+    font-size: 15px; font-weight: 600; border: none; cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: var(--warm); color: #fff; box-shadow: 0 6px 18px rgba(197,106,63,0.28); }
+  .btn-primary:hover { background: var(--warm-deep); box-shadow: 0 10px 22px rgba(142,72,36,0.32); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); }
+  .btn-ghost:hover { background: var(--surface); border-color: var(--warm-soft); }
+  .btn-warm { background: var(--warm); color: #fff; }
+  .btn-warm:hover { background: var(--warm-deep); }
+  .hero-meta { margin-top: 28px; display: flex; gap: 22px; flex-wrap: wrap; font-size: 13px; color: var(--ink-mute); }
+  .hero-meta span { display: inline-flex; align-items: center; gap: 6px; }
+
+  @keyframes drawCircle { to { stroke-dashoffset: 0; } }
+  .hero .nodo svg circle, .hero .nodo svg path {
+    stroke-dasharray: 200; stroke-dashoffset: 200; animation: drawCircle 1.4s ease-out forwards;
+  }
+
+  /* PHONE MOCKUP */
+  .phone {
+    width: 308px; aspect-ratio: 380 / 800;
+    background: var(--bg); border-radius: 38px;
+    box-shadow:
+      0 1px 1px rgba(74,46,30,0.05),
+      0 6px 18px rgba(74,46,30,0.08),
+      0 32px 80px rgba(74,46,30,0.12),
+      inset 0 0 0 1.5px var(--line);
+    overflow: hidden; display: flex; flex-direction: column;
+    position: relative; margin: 0 auto;
+  }
+  .phone.lg { width: 340px; }
+  .phone .status {
+    height: 32px; flex: 0 0 auto; padding: 0 22px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; font-weight: 600; color: var(--navy-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  .phone .gesture { height: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; }
+  .phone .gesture::after { content: ''; width: 100px; height: 4px; border-radius: 2px; background: rgba(42,26,17,0.5); }
+  .phone-screen { flex: 1; min-height: 0; padding: 0 14px; overflow: hidden; }
+
+  .home-bar { display: flex; align-items: center; gap: 10px; padding: 10px 4px 6px; }
+  .home-bar .brandsmall { font-size: 15px; font-weight: 600; color: var(--ink); letter-spacing: -0.2px; flex: 1; }
+  .home-bar .brandsmall b { font-weight: 700; }
+  .home-bar .gear { width: 30px; height: 30px; border-radius: 15px; display: flex; align-items: center; justify-content: center; color: var(--ink-mute); }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 14px; margin-bottom: 10px; }
+  .card.warm { background: var(--warm-tint); border-color: #F2DBC4; }
+  .card-label { font-size: 10.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 8px; }
+  .status-hero { display: flex; align-items: flex-start; gap: 10px; }
+  .status-hero h3 { font-size: 17px; font-weight: 700; letter-spacing: -0.2px; margin: 0; color: var(--ink); }
+  .pill { padding: 4px 10px; border-radius: 999px; font-size: 11px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
+  .pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .pill.ok { background: rgba(30,142,95,0.12); color: #0E6B45; }
+  .pill.ok .dot { background: var(--ok); }
+  .stats-row { display: flex; justify-content: space-around; }
+  .stat { flex: 1; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .stat .ico { width: 30px; height: 30px; border-radius: 15px; background: var(--navy-tint); display: flex; align-items: center; justify-content: center; margin-bottom: 3px; color: var(--navy); }
+  .stat .v { font-size: 20px; font-weight: 700; color: var(--ink); }
+  .stat .l { font-size: 10.5px; color: var(--ink-mute); }
+  .recent-row { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--line-soft); }
+  .recent-row:last-child { border-bottom: none; }
+  .recent-time { width: 54px; }
+  .recent-time .t { font-size: 13px; font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; }
+  .recent-time .a { font-size: 10px; color: var(--ink-mute); }
+  .recent-body { flex: 1; padding: 0 10px; }
+  .recent-body .l { font-size: 12.5px; color: var(--ink); }
+  .recent-body .w { font-size: 10.5px; color: var(--ink-mute); margin-top: 1px; }
+  .recent-tone { width: 7px; height: 7px; border-radius: 50%; background: var(--ok); flex: 0 0 auto; }
+
+  .notif {
+    position: absolute; top: 38px; left: 14px; right: 14px;
+    background: rgba(255,255,255,0.96); border-radius: 14px; padding: 10px 12px;
+    box-shadow: 0 10px 28px rgba(0,0,0,0.18), 0 0 0 1.5px var(--warm);
+    display: flex; gap: 10px; align-items: flex-start;
+    opacity: 0; transform: translateY(-30px);
+    animation: notifLoop 9s 2s ease-out infinite; z-index: 5;
+  }
+  @keyframes notifLoop {
+    0%, 5% { opacity: 0; transform: translateY(-30px); }
+    10%, 30% { opacity: 1; transform: translateY(0); }
+    40%, 100% { opacity: 0; transform: translateY(-30px); }
+  }
+  .notif-ico { width: 26px; height: 26px; border-radius: 7px; background: #fff; border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+  .notif-body { flex: 1; }
+  .notif-meta { font-size: 10px; color: #777; font-weight: 600; }
+  .notif-title { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
+  .notif-body p { font-size: 11px; color: #555; margin: 2px 0 0; }
+  .notif-count { margin-left: auto; font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--warm); }
+
+  /* Sections */
+  section { padding: 100px 0; position: relative; }
+  section .section-header { max-width: 720px; margin-bottom: 60px; }
+  section h2 { font-size: clamp(36px, 5vw, 62px); margin: 0 0 18px; font-family: var(--serif); font-style: italic; font-weight: 400; letter-spacing: -1px; line-height: 1.05; }
+  section h2 em { color: var(--warm-deep); }
+  section .section-lede { font-size: 18px; color: var(--ink-soft); line-height: 1.6; max-width: 600px; }
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.7s ease, transform 0.7s ease; }
+  .reveal.in { opacity: 1; transform: translateY(0); }
+
+  /* HOW */
+  .how { background: var(--surface); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  .how-stage { display: grid; grid-template-columns: 1fr auto 1fr; gap: 32px; align-items: center; margin-top: 24px; }
+  @media (max-width: 900px) { .how-stage { grid-template-columns: 1fr; } .how-arrow { transform: rotate(90deg); } }
+  .how-side { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+  .how-label { font-size: 12px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--ink-mute); }
+  .how-arrow svg { color: var(--warm); animation: arrowPulse 2.2s ease-in-out infinite; }
+  @keyframes arrowPulse { 0%, 100% { opacity: 0.4; transform: translateX(0); } 50% { opacity: 1; transform: translateX(8px); } }
+
+  .chat { width: 290px; background: #EBEDF0; border-radius: 22px; padding: 16px 12px; box-shadow: 0 18px 40px rgba(74,46,30,0.08); display: flex; flex-direction: column; gap: 6px; min-height: 360px; }
+  .chat-head { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; margin-bottom: 4px; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .chat-avatar { width: 30px; height: 30px; border-radius: 15px; background: var(--surface); border: 1px solid var(--line); display: flex; align-items: center; justify-content: center; }
+  .chat-head-name { font-size: 13px; font-weight: 600; color: #1A1A1A; }
+  .chat-head-status { font-size: 10.5px; color: #777; }
+  .bubble { max-width: 78%; padding: 7px 11px; border-radius: 12px; font-size: 13px; line-height: 1.4; color: #1A1A1A; box-shadow: 0 1px 1px rgba(0,0,0,0.04); }
+  .bubble.in { background: #fff; align-self: flex-start; }
+  .bubble.out { background: #EFFDDE; align-self: flex-end; }
+  .bubble.mono { font-family: var(--mono); font-size: 12.5px; }
+  .bubble .time { font-size: 9.5px; color: #888; text-align: right; margin-top: 2px; font-family: var(--sans); font-weight: 400; }
+  .bubble.location { padding: 0; overflow: hidden; width: 200px; }
+  .bubble.location .map { height: 90px; width: 100%; background: #DDD5C7; position: relative; }
+  .bubble.location .map::after { content: ''; position: absolute; top: 35px; left: 50%; width: 12px; height: 12px; background: var(--warm); border-radius: 50%; transform: translateX(-50%); box-shadow: 0 0 0 4px rgba(197,106,63,0.35); }
+  .bubble.location .map-grid { position: absolute; inset: 0; background: linear-gradient(to right, rgba(255,255,255,0.5) 1px, transparent 1px) 0 0/30px 30px, linear-gradient(to bottom, rgba(255,255,255,0.5) 1px, transparent 1px) 0 0/30px 30px; }
+  .bubble.location .info { padding: 8px 11px; font-size: 12px; }
+  .bubble.location .info .name { font-weight: 700; font-size: 13px; }
+  .bubble.location .info .meta { font-size: 10.5px; color: #666; margin-top: 1px; }
+  .chat .bubble { opacity: 0; transform: translateY(10px); transition: opacity 0.5s ease, transform 0.5s ease; }
+  .chat .bubble.shown { opacity: 1; transform: translateY(0); }
+
+  .how-phone { width: 240px; aspect-ratio: 380 / 800; background: var(--bg); border-radius: 32px; box-shadow: 0 18px 40px rgba(74,46,30,0.10), inset 0 0 0 1.5px var(--line); overflow: hidden; display: flex; flex-direction: column; position: relative; }
+  .how-phone .status { height: 26px; padding: 0 18px; display: flex; align-items: center; justify-content: space-between; font-size: 10.5px; font-weight: 600; color: var(--navy-deep); }
+  .how-phone .body { flex: 1; padding: 0 10px; overflow: hidden; display: flex; flex-direction: column; gap: 6px; }
+  .how-phone .gesture { height: 16px; display: flex; align-items: center; justify-content: center; }
+  .how-phone .gesture::after { content: ''; width: 70px; height: 3px; border-radius: 2px; background: rgba(42,26,17,0.45); }
+  .how-phone-card { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 10px; font-size: 10.5px; }
+  .how-phone-card.flash { background: var(--warm-tint); border-color: #F2DBC4; }
+  .pulse-ring { position: relative; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; }
+  .pulse-ring::before, .pulse-ring::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: var(--warm); opacity: 0.3; animation: pulse 1.6s ease-out infinite; }
+  .pulse-ring::after { animation-delay: 0.8s; }
+  @keyframes pulse { 0% { transform: scale(0.6); opacity: 0.5; } 100% { transform: scale(1.5); opacity: 0; } }
+  .pulse-ring .core { width: 12px; height: 12px; border-radius: 50%; background: var(--warm); z-index: 1; }
+
+  /* Three no's */
+  .threecol { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 60px; }
+  @media (max-width: 900px) { .threecol { grid-template-columns: 1fr; } }
+  .nocard { background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 32px 28px; transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s; }
+  .nocard:hover { transform: translateY(-4px); box-shadow: 0 20px 50px rgba(74,46,30,0.08); border-color: var(--warm-soft); }
+  .nocard .no { font-family: var(--serif); font-style: italic; font-size: 64px; line-height: 0.9; color: var(--warm); margin-bottom: 16px; }
+  .nocard h3 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin: 0 0 10px; }
+  .nocard p { font-size: 14.5px; color: var(--ink-soft); line-height: 1.6; margin: 0; }
+
+  /* Condensed inline 'no's inside section 01 */
+  .three-mini {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px;
+    margin-top: 72px; padding-top: 36px;
+    border-top: 1px solid var(--line-soft);
+  }
+  @media (max-width: 760px) { .three-mini { grid-template-columns: 1fr; gap: 22px; } }
+  .three-mini .mini-item h4 {
+    font-size: 15px; font-weight: 700; color: var(--ink);
+    margin: 0 0 6px; letter-spacing: -0.1px;
+    display: flex; align-items: baseline; gap: 8px;
+  }
+  .three-mini .mini-item h4::before {
+    content: 'no'; font-family: var(--serif); font-style: italic;
+    font-size: 22px; color: var(--warm); line-height: 0.9;
+  }
+  .three-mini .mini-item p {
+    font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; margin: 0;
+  }
+
+  /* Commands — warm cocoa room, like a kitchen at golden hour */
+  .cmds {
+    background:
+      radial-gradient(60% 60% at 80% 0%, rgba(197,106,63,0.22), transparent 70%),
+      radial-gradient(50% 50% at 10% 100%, rgba(236,181,141,0.18), transparent 70%),
+      linear-gradient(180deg, #3A2418 0%, #2E1B10 100%);
+    color: #FBF3E7; margin: 0; padding: 100px 0;
+  }
+  .cmds h2 { color: #FBF3E7; } .cmds h2 em { color: var(--warm-soft); }
+  .cmds .section-lede { color: rgba(251,243,231,0.72); }
+  .cmds-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; margin-top: 50px; }
+  .cmd-card { background: rgba(251,243,231,0.05); border: 1px solid rgba(251,243,231,0.10); border-radius: 18px; padding: 24px; transition: background 0.25s, border-color 0.25s, transform 0.25s; }
+  .cmd-card:hover { background: rgba(251,243,231,0.08); border-color: rgba(236,181,141,0.4); transform: translateY(-2px); }
+  .cmd-name { font-family: var(--mono); font-size: 14px; color: var(--warm-soft); margin-bottom: 8px; font-weight: 500; letter-spacing: 0.3px; }
+  .cmd-title { font-size: 17px; font-weight: 700; margin: 0 0 6px; color: #FBF3E7; }
+  .cmd-desc { font-size: 13.5px; color: rgba(251,243,231,0.72); line-height: 1.55; margin: 0; }
+
+  /* Gallery */
+  .gallery { overflow: hidden; }
+  .gallery-scroll { display: flex; gap: 32px; overflow-x: auto; padding: 30px 28px 40px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  .gallery-scroll::-webkit-scrollbar { display: none; }
+  .gallery-item { flex: 0 0 auto; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  .gallery-item .caption { font-size: 14px; color: var(--ink-mute); font-weight: 500; text-align: center; max-width: 260px; }
+  .gallery-item .caption strong { display: block; color: var(--ink); font-size: 16px; font-weight: 700; margin-bottom: 3px; }
+
+  /* Privacy */
+  .privacy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+  @media (max-width: 900px) { .privacy-grid { grid-template-columns: 1fr; } }
+  .privacy-list { list-style: none; padding: 0; margin: 36px 0 0; }
+  .privacy-list li { display: flex; gap: 16px; padding: 16px 0; border-bottom: 1px solid var(--line-soft); }
+  .privacy-list li:last-child { border-bottom: none; }
+  .privacy-list .num { font-family: var(--serif); font-style: italic; font-size: 22px; color: var(--warm-deep); flex: 0 0 28px; }
+  .privacy-list h4 { margin: 0; font-size: 16px; font-weight: 700; color: var(--ink); }
+  .privacy-list p { margin: 4px 0 0; font-size: 14px; color: var(--ink-soft); line-height: 1.55; }
+
+  .audit-card { background: var(--surface); border: 1px solid var(--line); border-radius: 22px; padding: 28px; box-shadow: 0 12px 40px rgba(74,46,30,0.06); }
+  .audit-card-head { font-size: 11px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: var(--ink-mute); margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .audit-row { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+  .audit-row:last-child { border-bottom: none; }
+  .audit-marker { width: 28px; height: 28px; border-radius: 14px; border: 2px solid var(--ok); background: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 28px; }
+  .audit-marker.warn { border-color: #D4A340; }
+  .audit-body { flex: 1; }
+  .audit-body .l { font-size: 13.5px; font-weight: 600; color: var(--ink); }
+  .audit-body .s { font-size: 11.5px; color: var(--ink-mute); margin-top: 1px; }
+  .audit-body .cmd { display: inline-block; margin-top: 5px; font-family: var(--mono); font-size: 10.5px; color: var(--ink-soft); padding: 1px 6px; background: var(--bg-alt); border-radius: 3px; }
+  .audit-time { font-family: var(--mono); font-size: 11.5px; color: var(--ink-mute); }
+
+  /* DOWNLOAD — golden hour, terracotta sun in the corner */
+  .download {
+    background:
+      radial-gradient(70% 80% at 90% 10%, rgba(236,181,141,0.35), transparent 65%),
+      radial-gradient(50% 60% at 10% 90%, rgba(197,106,63,0.20), transparent 70%),
+      linear-gradient(140deg, #3A2418 0%, #2E1B10 55%, #4A2E1E 100%);
+    color: #FBF3E7; position: relative; overflow: hidden;
+  }
+  .download::before { content: ''; position: absolute; top: -240px; right: -240px; width: 640px; height: 640px; border-radius: 50%; background: radial-gradient(circle, rgba(236,181,141,0.45), transparent 70%); pointer-events: none; filter: blur(8px); }
+  .download-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; position: relative; }
+  @media (max-width: 900px) { .download-grid { grid-template-columns: 1fr; gap: 50px; } }
+  .download h2 { color: #FBF3E7; } .download h2 em { color: var(--warm-soft); }
+  .download-lede { color: rgba(251,243,231,0.78); font-size: 18px; line-height: 1.6; }
+  .download-meta { display: flex; flex-wrap: wrap; gap: 18px; margin-top: 30px; font-size: 13px; color: rgba(251,243,231,0.72); }
+  .download-meta div { display: inline-flex; align-items: center; gap: 7px; }
+  .download-ctas { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .qr-block { background: #fff; border-radius: 24px; padding: 32px; box-shadow: 0 30px 80px rgba(0,0,0,0.3); color: var(--ink); max-width: 380px; margin: 0 auto; }
+  .qr-img { width: 220px; height: 220px; display: grid; grid-template-columns: repeat(21, 1fr); margin: 0 auto; position: relative; }
+  .qr-img .cell { background: var(--ink); }
+  .qr-block .label { font-size: 13px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); text-align: center; margin-top: 22px; }
+  .qr-block .title { font-family: var(--serif); font-style: italic; font-size: 28px; text-align: center; margin: 6px 0 4px; }
+  .qr-block .sub { font-size: 13.5px; color: var(--ink-soft); text-align: center; line-height: 1.5; }
+
+  /* DONATIONS */
+  .donate {
+    padding: 100px 0; background: var(--bg-alt);
+    border-top: 1px solid var(--line);
+  }
+  .donate-card {
+    max-width: 820px; margin: 0 auto; text-align: center;
+    background: var(--surface); border: 1px solid var(--line); border-radius: 24px;
+    padding: 56px 48px;
+    box-shadow: 0 12px 40px rgba(74,46,30,0.06);
+    position: relative; overflow: hidden;
+  }
+  .donate-card::before {
+    content: ''; position: absolute;
+    inset: -2px -2px auto -2px; height: 6px;
+    background: linear-gradient(90deg, var(--warm) 0%, var(--warm-soft) 50%, var(--warm) 100%);
+  }
+  .donate-card .eyebrow { color: var(--warm-deep); justify-content: center; display: inline-flex; }
+  .donate-card h2 {
+    font-size: clamp(30px, 4.2vw, 48px);
+    margin: 16px 0 24px;
+  }
+  .donate-card p {
+    font-size: 17px; color: var(--ink-soft); line-height: 1.65;
+    max-width: 620px; margin: 0 auto;
+  }
+  .donate-card p + p { margin-top: 14px; }
+  .donate-ctas { margin-top: 32px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+
+  /* FOOTER */
+  footer { padding: 60px 0 40px; background: var(--bg); color: var(--ink-soft); font-size: 13.5px; border-top: 1px solid var(--line); }
+  .footer-grid { display: flex; gap: 40px; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; }
+  .footer-grid .col { flex: 1; min-width: 220px; }
+  .footer-grid .col p { margin: 6px 0; }
+  .footer-grid a:hover { color: var(--warm-deep); }
+  .legal-note {
+    flex: 2; min-width: 280px;
+    padding: 20px; background: var(--bg-alt); border-radius: 12px;
+    font-size: 12.5px; color: var(--ink-mute); line-height: 1.6;
+  }
+  .legal-note strong { color: var(--ink); font-weight: 600; }
+  .footer-tag {
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; gap: 20px; flex-wrap: wrap;
+    font-size: 11.5px; letter-spacing: 0.5px;
+    color: var(--ink-mute); text-transform: uppercase;
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="nav-inner">
+    <a href="#" class="brand">
+      <svg width="32" height="32" viewBox="0 0 40 40" fill="none">
+        <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+        <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+        <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+      </svg>
+      <span class="brand-text">
+        <span class="family">Family</span><span class="tracker">tracker</span>
+      </span>
+    </a>
+    <div class="nav-links">
+      <a href="#how" data-i18n="nav.how">How it works</a>
+      <a href="#privacy" data-i18n="nav.privacy">Privacy</a>
+      <a href="#commands" data-i18n="nav.commands">Commands</a>
+      <div class="lang-switch" role="tablist" aria-label="Language">
+        <button data-lang="en" class="active">EN</button>
+        <button data-lang="it">IT</button>
+      </div>
+      <a href="#download" class="nav-cta">
+        <span data-i18n="nav.download">Get the app</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="eyebrow" data-i18n="hero.eyebrow">A quieter way to look out for them</div>
+        <h1 class="display hero-title" data-i18n="hero.title">The people you love,<br/><em>close</em>. Always.</h1>
+        <p class="hero-lede" data-i18n="hero.lede">
+          When you need to know they're alright, one message is enough. The rest of the time, the app stays quiet — just there, like a porch light left on for them.
+        </p>
+        <div class="hero-ctas">
+          <a href="#download" class="btn btn-primary">
+            <span data-i18n="hero.ctaPrimary">Download for Android</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M19 12l-7 7-7-7"/></svg>
+          </a>
+          <a href="#how" class="btn btn-ghost" data-i18n="hero.ctaSecondary">How it works</a>
+        </div>
+        <div class="hero-meta">
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="16" height="10" rx="1"/><line x1="22" y1="11" x2="22" y2="13"/></svg> <span data-i18n="hero.meta.android">Android 8+</span></span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/></svg> <span data-i18n="hero.meta.lang">English &amp; Italian</span></span>
+          <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-11V5l-8-3-8 3v6c0 7 8 11 8 11z"/></svg> <span data-i18n="hero.meta.tracking">Zero tracking</span></span>
+        </div>
+      </div>
+
+      <div style="position: relative; display: flex; justify-content: center;">
+        <div style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: radial-gradient(ellipse, rgba(197,106,63,0.3), transparent 70%); filter: blur(40px); pointer-events: none;"></div>
+
+        <div class="phone lg">
+          <div class="status">
+            <span>14:32</span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+              <svg width="13" height="9" viewBox="0 0 13 9" fill="currentColor"><rect x="0" y="6" width="2" height="3"/><rect x="3" y="4" width="2" height="5"/><rect x="6" y="2" width="2" height="7"/><rect x="9" y="0" width="2" height="9"/></svg>
+              <span style="font-size: 10px;">4G</span>
+              78%
+              <div style="display: inline-block; width: 18px; height: 9px; border: 1.3px solid currentColor; border-radius: 2px; padding: 1px;"><div style="height: 100%; width: 78%; background: currentColor;"></div></div>
+            </span>
+          </div>
+
+          <div class="phone-screen">
+            <div class="home-bar">
+              <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+                <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+                <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+                <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+              </svg>
+              <span class="brandsmall">Family <b>Tracker</b></span>
+              <div class="gear">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+              </div>
+            </div>
+            <div class="card">
+              <div class="status-hero">
+                <div style="flex: 1;">
+                  <div style="font-size: 11px; color: var(--ink-mute); font-weight: 500;" data-i18n="phone.status">Status</div>
+                  <h3>Marco</h3>
+                </div>
+                <span class="pill ok"><span class="dot"></span><span data-i18n="phone.active">Active</span></span>
+              </div>
+              <div style="font-size: 11px; color: var(--ink-mute); margin-top: 8px;" data-i18n="phone.connected">Connected family: 2</div>
+            </div>
+            <div class="card">
+              <div class="card-label" data-i18n="phone.today">📊 Today</div>
+              <div class="stats-row">
+                <div class="stat">
+                  <div class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+                  <div class="v">3</div>
+                  <div class="l" data-i18n="phone.stat.locations">locations</div>
+                </div>
+                <div class="stat">
+                  <div class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/><circle cx="12" cy="13" r="4"/></svg></div>
+                  <div class="v">1</div>
+                  <div class="l" data-i18n="phone.stat.photos">photos</div>
+                </div>
+                <div class="stat">
+                  <div class="ico"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg></div>
+                  <div class="v">0</div>
+                  <div class="l" data-i18n="phone.stat.audios">audio</div>
+                </div>
+              </div>
+              <div style="font-size: 10.5px; color: var(--ink-mute); margin-top: 10px;" data-i18n="phone.lastCheck">Last check: 14:32</div>
+            </div>
+            <div class="card warm">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#C56A3F" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+                <span style="font-size: 12.5px; font-weight: 500; color: #8E4824; flex: 1;" data-i18n="phone.quiet.title">Quiet hours active</span>
+              </div>
+              <div style="font-size: 11px; color: #8E4824; margin-top: 2px;" data-i18n="phone.quiet.range">Night: 22:00 – 07:00</div>
+            </div>
+            <div class="card" style="padding: 0;">
+              <div style="padding: 11px 12px;">
+                <div class="recent-row">
+                  <div class="recent-time"><div class="t">14:32</div><div class="a" data-i18n="phone.now">now</div></div>
+                  <div class="recent-body"><div class="l" data-i18n="phone.recent.location">Location</div><div class="w" data-i18n="phone.recent.by1">from @mamma_rossi</div></div>
+                  <div class="recent-tone"></div>
+                </div>
+                <div class="recent-row">
+                  <div class="recent-time"><div class="t">12:15</div><div class="a" data-i18n="phone.hoursAgo">2 h ago</div></div>
+                  <div class="recent-body"><div class="l" data-i18n="phone.recent.photo">Photo</div><div class="w" data-i18n="phone.recent.by2">from @papa_rossi</div></div>
+                  <div class="recent-tone"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="gesture"></div>
+
+          <div class="notif">
+            <div class="notif-ico">
+              <svg width="16" height="16" viewBox="0 0 40 40" fill="none">
+                <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+                <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+                <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+              </svg>
+            </div>
+            <div class="notif-body">
+              <div class="notif-meta"><span>Family Tracker</span> · <span data-i18n="notif.now">now</span></div>
+              <div class="notif-title">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#C56A3F" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/><circle cx="12" cy="13" r="4"/></svg>
+                <span data-i18n="notif.title">Photo requested</span>
+              </div>
+              <p data-i18n="notif.body">@papa_rossi requested a photo. Capturing in…</p>
+            </div>
+            <div class="notif-count">5s</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how" class="how">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="eyebrow"><span style="font-family: var(--mono); font-weight: 500;">01</span> <span data-i18n="how.eyebrow">One question. One answer. Nothing in between.</span></div>
+      <h2 data-i18n="how.title">You ask from Telegram.<br/>The phone <em>answers</em>.</h2>
+      <p class="section-lede" data-i18n="how.lede">
+        No app for family members to install. All exchanges happen inside a regular Telegram chat. Your family sends a command — the app on the assisted person's phone replies in real time, and the event lands in the audit log.
+      </p>
+    </div>
+
+    <div class="how-stage reveal">
+      <div class="how-side">
+        <div class="how-label">↳ <span data-i18n="how.familyLabel">Family</span></div>
+        <div class="chat" id="chat-demo">
+          <div class="chat-head">
+            <div class="chat-avatar">
+              <svg width="16" height="16" viewBox="0 0 40 40" fill="none">
+                <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+                <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+              </svg>
+            </div>
+            <div>
+              <div class="chat-head-name">Family Tracker · Marco</div>
+              <div class="chat-head-status">bot</div>
+            </div>
+          </div>
+          <div class="bubble out mono" data-step="1">
+            /traccia
+            <div class="time">14:32 ✓✓</div>
+          </div>
+          <div class="bubble in" data-step="2" style="align-self: center; padding: 5px 11px; background: rgba(0,0,0,0.04); font-size: 11px; color: #555;">
+            <span data-i18n="how.typing">typing…</span>
+          </div>
+          <div class="bubble in location" data-step="3">
+            <div class="map"><div class="map-grid"></div></div>
+            <div class="info">
+              <div class="name" data-i18n="how.loc.title">📍 Marco's location</div>
+              <div class="meta">±12m · 0.8s · 🔋 78%</div>
+            </div>
+            <div class="time" style="padding: 0 11px 6px;">14:32 ✓✓</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="how-arrow">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 5l7 7-7 7"/></svg>
+      </div>
+
+      <div class="how-side">
+        <div class="how-label">↳ <span data-i18n="how.phoneLabel">App on Marco's phone</span></div>
+        <div class="how-phone">
+          <div class="status"><span>14:32</span><span style="font-size: 9px;">78%</span></div>
+          <div class="body" id="phone-body">
+            <div class="how-phone-card" id="phone-idle">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <svg width="11" height="11" viewBox="0 0 40 40" fill="none">
+                  <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+                  <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+                </svg>
+                <span style="font-weight: 600; color: var(--ink); font-size: 10.5px;">Marco</span>
+                <span class="pill ok" style="margin-left: auto; padding: 2px 7px; font-size: 9px;"><span class="dot" style="width: 5px; height: 5px;"></span><span data-i18n="phone.active">Active</span></span>
+              </div>
+            </div>
+            <div class="how-phone-card flash" id="phone-action" style="display: none;">
+              <div style="display: flex; align-items: center; gap: 8px;">
+                <div class="pulse-ring"><div class="core"></div></div>
+                <span style="font-size: 10.5px; font-weight: 600; color: var(--warm-deep);" data-i18n="how.phoneSending">Sending location…</span>
+              </div>
+            </div>
+            <div class="how-phone-card" id="phone-done" style="display: none;">
+              <div style="display: flex; align-items: center; gap: 6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+                <span style="font-size: 10.5px; color: var(--ink); font-weight: 600;" data-i18n="how.phoneSent">Sent to @mamma_rossi</span>
+              </div>
+              <div style="font-size: 9px; color: var(--ink-mute); margin-top: 3px;" data-i18n="how.phoneAck">Telegram ack · 0.6s</div>
+            </div>
+          </div>
+          <div class="gesture"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="three-mini reveal">
+      <div class="mini-item">
+        <h4 data-i18n="no.1.title">Custom backend</h4>
+        <p data-i18n="no.1.body">Telegram is the only channel. Everything runs on the phone &mdash; no server to host, no subscription, no account to create.</p>
+      </div>
+      <div class="mini-item">
+        <h4 data-i18n="no.2.title">Continuous tracking</h4>
+        <p data-i18n="no.2.body">GPS wakes up only when an explicit command asks. One location, when you need one &mdash; never before.</p>
+      </div>
+      <div class="mini-item">
+        <h4 data-i18n="no.3.title">Hidden surveillance</h4>
+        <p data-i18n="no.3.body">Persistent notification, on-device audit log, visible heads-up before camera or mic. Everything the app does is in the open.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COMMANDS -->
+<section id="commands" class="cmds">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="eyebrow" style="color: var(--warm-soft);"><span style="font-family: var(--mono); font-weight: 500;">02</span> <span data-i18n="cmd.eyebrow">Available commands</span></div>
+      <h2 style="color: #fff;" data-i18n="cmd.title">One <em>word</em> for everything<br/>you want to know.</h2>
+      <p class="section-lede" style="color: rgba(255,255,255,0.75);" data-i18n="cmd.lede">
+        Every command is sent as a normal Telegram message, from an authorized chat. The bot processes it, the app executes, and the answer goes back to the chat — with a heads-up when it matters.
+      </p>
+    </div>
+    <div class="cmds-grid">
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/traccia</div>
+        <h3 class="cmd-title" data-i18n="cmd.loc.title">Location</h3>
+        <p class="cmd-desc" data-i18n="cmd.loc.desc">One-shot high-accuracy GPS. Reply with a Telegram location card, accuracy and battery.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/foto <span style="color: rgba(255,255,255,0.4);">[front|back]</span></div>
+        <h3 class="cmd-title" data-i18n="cmd.photo.title">Snapshot</h3>
+        <p class="cmd-desc" data-i18n="cmd.photo.desc">Visible 5-second heads-up notification on the device, then a silent capture. Photo sent to the chat.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/audio <span style="color: rgba(255,255,255,0.4);">[seconds]</span></div>
+        <h3 class="cmd-title" data-i18n="cmd.audio.title">Recording</h3>
+        <p class="cmd-desc" data-i18n="cmd.audio.desc">Up to 30 seconds. Always preceded by a visible heads-up on the phone.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/stato</div>
+        <h3 class="cmd-title" data-i18n="cmd.status.title">Diagnostics</h3>
+        <p class="cmd-desc" data-i18n="cmd.status.desc">Battery, signal, last known location, active modes. Without engaging any sensor.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/tutto</div>
+        <h3 class="cmd-title" data-i18n="cmd.all.title">Full check</h3>
+        <p class="cmd-desc" data-i18n="cmd.all.desc">Location + photo + audio in sequence. For when you need to know everything at once.</p>
+      </div>
+      <div class="cmd-card reveal">
+        <div class="cmd-name">/trovami<span style="color: rgba(255,255,255,0.4);"> · <span data-i18n="cmd.optional">optional</span></span></div>
+        <h3 class="cmd-title" data-i18n="cmd.ring.title">Ring</h3>
+        <p class="cmd-desc" data-i18n="cmd.ring.desc">Rings the phone at max volume, even if silenced. For locating it at home.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GALLERY -->
+<section class="gallery">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="eyebrow"><span style="font-family: var(--mono); font-weight: 500;">03</span> <span data-i18n="gal.eyebrow">On the phone of the person using it</span></div>
+      <h2 data-i18n="gal.title">One screen.<br/>Five <em>certainties</em>.</h2>
+    </div>
+  </div>
+  <div class="gallery-scroll">
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="phone-screen">
+          <div class="home-bar">
+            <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+              <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+              <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+              <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+            </svg>
+            <span class="brandsmall">Family <b>Tracker</b></span>
+            <div class="gear">⚙</div>
+          </div>
+          <div class="card">
+            <div class="status-hero">
+              <div style="flex:1;"><div style="font-size:11px;color:var(--ink-mute);" data-i18n="phone.status">Status</div><h3>Marco</h3></div>
+              <span class="pill ok"><span class="dot"></span><span data-i18n="phone.active">Active</span></span>
+            </div>
+            <div style="font-size:11px;color:var(--ink-mute);margin-top:8px;" data-i18n="phone.connected">Connected family: 2</div>
+          </div>
+          <div class="card">
+            <div class="card-label" data-i18n="phone.today">📊 Today</div>
+            <div class="stats-row">
+              <div class="stat"><div class="ico">📍</div><div class="v">3</div><div class="l" data-i18n="phone.stat.locations">locations</div></div>
+              <div class="stat"><div class="ico">📷</div><div class="v">1</div><div class="l" data-i18n="phone.stat.photos">photos</div></div>
+              <div class="stat"><div class="ico">🎙</div><div class="v">0</div><div class="l" data-i18n="phone.stat.audios">audio</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.1.title">Home</strong><span data-i18n="gal.1.desc">Device status, today's stats, recent history</span></div>
+    </div>
+
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="phone-screen">
+          <div class="home-bar">
+            <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+              <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+              <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+              <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+            </svg>
+            <span class="brandsmall">Family <b>Tracker</b></span>
+            <div class="gear">⚙</div>
+          </div>
+          <div class="card" style="border-color: var(--navy); padding: 14px;">
+            <div style="display: flex; gap: 10px;">
+              <div style="width: 30px; height: 30px; border-radius: 10px; background: var(--navy-tint); display: flex; align-items: center; justify-content: center; flex: 0 0 auto;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6"/><path d="M23 11h-6"/></svg>
+              </div>
+              <div style="flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 600; color: var(--ink);" data-i18n="gal.join.title">New access request</div>
+                <div style="font-size: 10.5px; color: var(--ink-mute); margin-top: 2px;" data-i18n="gal.join.body">Approve only family members you trust.</div>
+              </div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 8px; padding-top: 10px; margin-top: 10px; border-top: 1px solid var(--line);">
+              <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 12px; color: var(--ink);">Mamma Rossi</div>
+                <div style="font-family: var(--mono); font-size: 10px; color: var(--ink-mute);">chat 482971883</div>
+              </div>
+              <button style="padding: 4px 9px; font-size: 11px; background: transparent; border: 1px solid var(--line); color: var(--ink); border-radius: 6px; font-weight: 600;" data-i18n="gal.join.reject">Reject</button>
+              <button style="padding: 4px 9px; font-size: 11px; background: var(--navy); border: none; color: #fff; border-radius: 6px; font-weight: 600;" data-i18n="gal.join.approve">Approve</button>
+            </div>
+          </div>
+          <div class="card">
+            <div class="status-hero">
+              <div style="flex:1;"><div style="font-size:11px;color:var(--ink-mute);" data-i18n="phone.status">Status</div><h3>Marco</h3></div>
+              <span class="pill ok"><span class="dot"></span><span data-i18n="phone.active">Active</span></span>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.2.title">Join requests</strong><span data-i18n="gal.2.desc">Approve every new family member before they can send commands</span></div>
+    </div>
+
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="phone-screen">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 12px 4px 12px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink);"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <div>
+              <div style="font-size: 15px; font-weight: 600; color: var(--ink);" data-i18n="gal.3.barTitle">Audit log</div>
+              <div style="font-size: 11px; color: var(--ink-mute);" data-i18n="gal.3.barSub">All recorded events</div>
+            </div>
+          </div>
+          <div style="display: flex; gap: 4px; padding: 4px 0 10px; overflow-x: auto;">
+            <span style="padding: 4px 10px; border-radius: 999px; background: var(--navy); color: #fff; font-size: 10.5px; font-weight: 600;" data-i18n="gal.3.filterAll">All</span>
+            <span style="padding: 4px 10px; border-radius: 999px; background: transparent; color: var(--ink-soft); border: 1px solid var(--line); font-size: 10.5px; font-weight: 600;" data-i18n="gal.3.filterCmds">Commands</span>
+            <span style="padding: 4px 10px; border-radius: 999px; background: transparent; color: var(--ink-soft); border: 1px solid var(--line); font-size: 10.5px; font-weight: 600;" data-i18n="gal.3.filterBlocks">Blocks</span>
+          </div>
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 4px 0 6px;" data-i18n="gal.3.today">TODAY</div>
+          <div style="position: relative;">
+            <div style="position: absolute; left: 15px; top: 6px; bottom: 6px; width: 2px; background: var(--line-soft);"></div>
+            <div style="display: flex; gap: 10px; padding: 6px 0;">
+              <div style="width: 28px; height: 28px; border-radius: 14px; background: #fff; border: 2px solid var(--ok); display: flex; align-items: center; justify-content: center; z-index: 1; flex: 0 0 auto;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div style="flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px;">
+                <div style="display: flex; justify-content: space-between; gap: 6px;">
+                  <span style="font-size: 11.5px; font-weight: 600; color: var(--ink);" data-i18n="gal.3.evt1">Location sent</span>
+                  <span style="font-family: var(--mono); font-size: 10px; color: var(--ink-mute);">14:32</span>
+                </div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;">@mamma_rossi · ±12m · 0.8s</div>
+                <div style="display: inline-block; margin-top: 4px; padding: 1px 6px; background: var(--bg-alt); font-family: var(--mono); font-size: 9.5px; color: var(--ink-soft); border-radius: 3px;">/traccia</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 6px 0;">
+              <div style="width: 28px; height: 28px; border-radius: 14px; background: #fff; border: 2px solid var(--ok); display: flex; align-items: center; justify-content: center; z-index: 1; flex: 0 0 auto;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/><circle cx="12" cy="13" r="4"/></svg></div>
+              <div style="flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px;">
+                <div style="display: flex; justify-content: space-between; gap: 6px;">
+                  <span style="font-size: 11.5px; font-weight: 600; color: var(--ink);" data-i18n="gal.3.evt2">Photo captured</span>
+                  <span style="font-family: var(--mono); font-size: 10px; color: var(--ink-mute);">12:15</span>
+                </div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.3.evt2Sub">@papa_rossi · back camera</div>
+              </div>
+            </div>
+            <div style="display: flex; gap: 10px; padding: 6px 0;">
+              <div style="width: 28px; height: 28px; border-radius: 14px; background: #fff; border: 2px solid #D4A340; display: flex; align-items: center; justify-content: center; z-index: 1; flex: 0 0 auto;"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#D4A340" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+              <div style="flex: 1; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 7px 9px;">
+                <div style="display: flex; justify-content: space-between; gap: 6px;">
+                  <span style="font-size: 11.5px; font-weight: 600; color: var(--ink);" data-i18n="gal.3.evt3">Photo blocked (quiet)</span>
+                  <span style="font-family: var(--mono); font-size: 10px; color: var(--ink-mute);">09:30</span>
+                </div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.3.evt3Sub">"School" window</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.3.title">Audit log</strong><span data-i18n="gal.3.desc">Every request is recorded. Visible to whoever uses the device, anytime</span></div>
+    </div>
+
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="phone-screen">
+          <div class="home-bar">
+            <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+              <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+              <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+              <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+            </svg>
+            <span class="brandsmall">Family <b>Tracker</b></span>
+            <div class="gear">⚙</div>
+          </div>
+          <div style="display: flex; gap: 8px; padding-bottom: 10px;">
+            <button style="flex: 1; background: var(--ok); color: #fff; border: none; border-radius: 12px; min-height: 56px; padding: 0 14px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 13px; letter-spacing: 0.4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>
+              <span data-i18n="gal.4.fine">I'M FINE</span>
+            </button>
+            <button style="flex: 1; background: var(--danger); color: #fff; border: none; border-radius: 12px; min-height: 56px; padding: 0 14px; display: flex; align-items: center; justify-content: center; gap: 6px; font-weight: 700; font-size: 13px; letter-spacing: 0.4px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
+              <span data-i18n="gal.4.help">HELP</span>
+            </button>
+          </div>
+          <div class="card">
+            <div class="status-hero">
+              <div style="flex:1;"><div style="font-size:11px;color:var(--ink-mute);" data-i18n="phone.status">Status</div><h3>Mario</h3></div>
+              <span class="pill ok"><span class="dot"></span><span data-i18n="phone.active">Active</span></span>
+            </div>
+          </div>
+          <div class="card">
+            <div class="card-label" data-i18n="phone.today">📊 Today</div>
+            <div class="stats-row">
+              <div class="stat"><div class="ico">📍</div><div class="v">5</div><div class="l" data-i18n="phone.stat.locations">locations</div></div>
+              <div class="stat"><div class="ico">📷</div><div class="v">0</div><div class="l" data-i18n="phone.stat.photos">photos</div></div>
+              <div class="stat"><div class="ico">🎙</div><div class="v">0</div><div class="l" data-i18n="phone.stat.audios">audio</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.4.title">Quick buttons</strong><span data-i18n="gal.4.desc">"I'm fine" and "Help" always at hand, configurable from settings</span></div>
+    </div>
+
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="phone-screen">
+          <div style="display: flex; align-items: center; gap: 10px; padding: 12px 4px;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink);"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            <div style="font-size: 15px; font-weight: 600; color: var(--ink);" data-i18n="gal.5.barTitle">Settings</div>
+          </div>
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 6px 0;" data-i18n="gal.5.sectionBot">BOT</div>
+          <div class="card" style="padding: 0;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.bot.title">Dedicated bot</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.bot.desc">Token, deep link, QR</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.acc.title">Authorized accounts</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.acc.desc">2 family members</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+          </div>
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 14px 0 6px;" data-i18n="gal.5.sectionBeh">BEHAVIOR</div>
+          <div class="card" style="padding: 0;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.cap.title">Capabilities</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.cap.desc">Photo, audio, ringer</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.qh.title">Quiet hours</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.qh.desc">When to block photo/audio</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.5.title">Settings</strong><span data-i18n="gal.5.desc">Bot, authorized accounts, quiet hours, advanced commands, diagnostics</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- PRIVACY -->
+<section id="privacy">
+  <div class="container">
+    <div class="privacy-grid">
+      <div class="reveal">
+        <div class="eyebrow"><span style="font-family: var(--mono); font-weight: 500;">04</span> <span data-i18n="pr.eyebrow">Transparency, always</span></div>
+        <h2 data-i18n="pr.title">You always see <em>who</em> asked<br/>what, and when.</h2>
+        <p style="font-size: 17px; color: var(--ink-soft); line-height: 1.6; margin-top: 18px;" data-i18n="pr.lede">
+          Every event is recorded in the audit log — visible on this phone, at any time, even to the person who uses the app. Requests, quiet-hour blocks, unauthorized attempts: all tracked, all readable.
+        </p>
+        <ul class="privacy-list">
+          <li>
+            <div class="num">i.</div>
+            <div>
+              <h4 data-i18n="pr.1.title">Persistent notification</h4>
+              <p data-i18n="pr.1.body">Never a hidden background service. Family Tracker is overt: a fixed "listening to the family" notification is always visible.</p>
+            </div>
+          </li>
+          <li>
+            <div class="num">ii.</div>
+            <div>
+              <h4 data-i18n="pr.2.title">Heads-up before every action</h4>
+              <p data-i18n="pr.2.body">Photo and audio require a visible 5-second heads-up notification on the device. No surprises.</p>
+            </div>
+          </li>
+          <li>
+            <div class="num">iii.</div>
+            <div>
+              <h4 data-i18n="pr.3.title">Token in the Keystore</h4>
+              <p data-i18n="pr.3.body">The Telegram bot token lives in the hardware-backed Android Keystore. Never exfiltrated, never in the clear.</p>
+            </div>
+          </li>
+          <li>
+            <div class="num">iv.</div>
+            <div>
+              <h4 data-i18n="pr.4.title">Family whitelist</h4>
+              <p data-i18n="pr.4.body">Only approved chats can send commands. Everything else is silently recorded and ignored.</p>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="reveal">
+        <div class="audit-card">
+          <div class="audit-card-head">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg>
+            <span data-i18n="pr.audit.head">Audit log · today</span>
+          </div>
+          <div class="audit-timeline">
+            <div class="audit-row">
+              <div class="audit-marker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg></div>
+              <div class="audit-body"><div class="l" data-i18n="pr.audit.1.title">Location sent</div><div class="s">@mamma_rossi · ±12m · 0.8s</div><span class="cmd">/traccia</span></div>
+              <div class="audit-time">14:32</div>
+            </div>
+            <div class="audit-row">
+              <div class="audit-marker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/><circle cx="12" cy="13" r="4"/></svg></div>
+              <div class="audit-body"><div class="l" data-i18n="pr.audit.2.title">Photo captured</div><div class="s" data-i18n="pr.audit.2.sub">@papa_rossi · back camera</div><span class="cmd">/foto back</span></div>
+              <div class="audit-time">12:15</div>
+            </div>
+            <div class="audit-row">
+              <div class="audit-marker warn"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#D4A340" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg></div>
+              <div class="audit-body"><div class="l" data-i18n="pr.audit.3.title">Photo blocked (quiet hours)</div><div class="s" data-i18n="pr.audit.3.sub">"School" window</div><span class="cmd">/foto</span></div>
+              <div class="audit-time">09:30</div>
+            </div>
+            <div class="audit-row">
+              <div class="audit-marker"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#5B8C4A" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg></div>
+              <div class="audit-body"><div class="l" data-i18n="pr.audit.4.title">Status sent</div><div class="s" data-i18n="pr.audit.4.sub">@papa_rossi · battery 78%, 4G</div><span class="cmd">/stato</span></div>
+              <div class="audit-time">08:14</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DOWNLOAD -->
+<section id="download" class="download">
+  <div class="container">
+    <div class="download-grid">
+      <div class="reveal">
+        <div class="eyebrow" style="color: var(--warm-soft);"><span style="font-family: var(--mono); font-weight: 500;">05</span> <span data-i18n="dl.eyebrow">Get it</span></div>
+        <h2 style="color: #fff;" data-i18n="dl.title">Scan. Install.<br/><em>Start.</em></h2>
+        <p class="download-lede" data-i18n="dl.lede">
+          Family Tracker is shipped as a signed APK. Install it once on the phone of the person who will be assisted — the onboarding guides you through the next three minutes: Telegram bot creation, first family member, first test command.
+        </p>
+        <div class="download-meta">
+          <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/></svg> <span data-i18n="dl.meta.android">Android 8.0+</span></div>
+          <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> <span data-i18n="dl.meta.signed">Signed APK</span></div>
+          <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-i18n="dl.meta.setup">3-min setup</span></div>
+        </div>
+        <div class="download-ctas">
+          <a href="#" class="btn btn-warm">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            <span data-i18n="dl.cta">Download APK</span>
+          </a>
+        </div>
+      </div>
+
+      <div class="reveal">
+        <div class="qr-block">
+          <div class="qr-img" id="qr"></div>
+          <div class="label" data-i18n="dl.qr.label">Scan from Telegram</div>
+          <div class="title" data-i18n="dl.qr.title">Open the download</div>
+          <div class="sub" data-i18n="dl.qr.sub">Point your phone here to get the direct link to the APK. Version 0.1.0.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DONATIONS / GRATITUDE -->
+<section class="donate">
+  <div class="container">
+    <div class="donate-card reveal">
+      <div class="eyebrow" data-i18n="thanks.eyebrow">A small note</div>
+      <h2 class="display" data-i18n="thanks.title">If it helped,<br/>just <em>say so</em>.</h2>
+      <p data-i18n="thanks.p1">I built Family Tracker for my family. Then I set it loose — free, non-commercial, for anyone who needs it.</p>
+      <p data-i18n="thanks.p2">If it helped you, even just saying so is nice. And if you'd like to leave a coffee behind: thank you.</p>
+      <div class="donate-ctas">
+        <a href="#" class="btn btn-warm">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
+          <span data-i18n="thanks.cta1">Buy me a coffee</span>
+        </a>
+        <a href="#" class="btn btn-ghost" style="border-color: var(--warm-soft); color: var(--warm-deep);">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+          <span data-i18n="thanks.cta2">Just say thanks</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="col">
+        <a href="#" class="brand" style="margin-bottom: 16px; display: inline-flex;">
+          <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+            <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+            <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+            <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+          </svg>
+          <span class="brand-text"><span class="family">Family</span><span class="tracker">tracker</span></span>
+        </a>
+        <p style="font-style: italic; font-family: var(--serif); font-size: 17px; color: var(--ink); max-width: 320px; line-height: 1.5;" data-i18n="footer.tagline">For families who trust each other.</p>
+        <p style="margin-top: 14px;">
+          <a href="#how" data-i18n="nav.how">How it works</a> ·
+          <a href="#privacy" data-i18n="nav.privacy">Privacy</a> ·
+          <a href="#commands" data-i18n="nav.commands">Commands</a> ·
+          <a href="#download" data-i18n="nav.download">Get the app</a>
+        </p>
+      </div>
+      <div class="legal-note">
+        <strong data-i18n="legal.title">A note on responsibility</strong>
+        <p style="margin: 8px 0 0;" data-i18n="legal.body">
+          Family Tracker is a free, non-commercial app I built for my own family and then chose to share. It is provided "as is", without warranty of any kind, and I cannot accept liability for how it is used. Please use it only where there is documented consent — for minors under your parental responsibility, or for elderly relatives with their knowledge and agreement. It is not a tool for surveillance of anyone else.
+        </p>
+      </div>
+    </div>
+    <div class="footer-tag">
+      <span>© 2026 Family Tracker · <span data-i18n="footer.madeWith">made with care</span></span>
+      <span data-i18n="footer.platform">Android only · sideload</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+  // ============================================================
+  // i18n
+  // ============================================================
+  const I18N = {
+    en: {
+      'nav.how': 'How it works',
+      'nav.privacy': 'Privacy',
+      'nav.commands': 'Commands',
+      'nav.download': 'Get the app',
+
+      'hero.eyebrow': 'A quieter way to look out for them',
+      'hero.title': "The people you love,<br/><em>close</em>. Always.",
+      'hero.lede': "When you need to know they're alright, one message is enough. The rest of the time, the app stays quiet \u2014 just there, like a porch light left on for them.",
+      'hero.ctaPrimary': 'Download for Android',
+      'hero.ctaSecondary': 'See how it works',
+      'hero.meta.android': 'Android 8+',
+      'hero.meta.lang': 'English & Italian',
+      'hero.meta.tracking': 'Zero tracking',
+
+      'phone.status': 'Status',
+      'phone.active': 'Active',
+      'phone.connected': 'Approved family: 2',
+      'phone.today': '\ud83d\udcca Today',
+      'phone.stat.locations': 'locations',
+      'phone.stat.photos': 'photos',
+      'phone.stat.audios': 'audio',
+      'phone.lastCheck': 'Last check: 14:32',
+      'phone.quiet.title': 'Quiet hours on',
+      'phone.quiet.range': 'Nights: 22:00 \u2013 07:00',
+      'phone.now': 'now',
+      'phone.hoursAgo': '2 h ago',
+      'phone.recent.location': 'Location',
+      'phone.recent.photo': 'Photo',
+      'phone.recent.by1': 'from @mamma_rossi',
+      'phone.recent.by2': 'from @papa_rossi',
+
+      'notif.now': 'now',
+      'notif.title': 'Photo requested',
+      'notif.body': '@papa_rossi asked for a photo. Capturing in\u2026',
+
+      'how.eyebrow': 'Ask. Answer. Done.',
+      'how.title': 'You ask from Telegram.<br/>The phone <em>answers</em>.',
+      'how.lede': "Your family sends a command in a regular Telegram chat. The app on the device replies in real time \u2014 no third app to install, no account to create. Every exchange lands in the on-device audit log.",
+      'how.familyLabel': 'Family',
+      'how.phoneLabel': "App on Marco's phone",
+      'how.typing': 'typing\u2026',
+      'how.loc.title': "\ud83d\udccd Marco's location",
+      'how.phoneSending': 'Sending location\u2026',
+      'how.phoneSent': 'Sent to @mamma_rossi',
+      'how.phoneAck': 'Telegram ack \u00b7 0.6s',
+
+      'no.1.title': 'Custom backend',
+      'no.1.body': 'Telegram is the only channel. Everything runs on the phone \u2014 no server to host, no subscription, no account to create.',
+      'no.2.title': 'Continuous tracking',
+      'no.2.body': 'GPS wakes up only when an explicit command asks. One location, when you need one \u2014 never before.',
+      'no.3.title': 'Hidden surveillance',
+      'no.3.body': 'Persistent notification, on-device audit log, visible heads-up before camera or mic. Everything the app does is in the open.',
+
+      'cmd.eyebrow': 'Commands',
+      'cmd.title': 'One <em>word</em>, one answer.',
+      'cmd.lede': 'Each command is a regular Telegram message from an approved chat. The bot routes it, the app runs it, and the result comes back to the chat \u2014 with a visible heads-up where it matters.',
+      'cmd.loc.title': 'Location',
+      'cmd.loc.desc': 'A single high-accuracy GPS fix. The reply is a Telegram location card with accuracy and battery.',
+      'cmd.photo.title': 'Snapshot',
+      'cmd.photo.desc': 'A visible 5-second heads-up on the device, then a silent capture. The photo arrives in chat.',
+      'cmd.audio.title': 'Recording',
+      'cmd.audio.desc': 'Up to 30 seconds. Always preceded by a visible heads-up on the phone.',
+      'cmd.status.title': 'Diagnostics',
+      'cmd.status.desc': 'Battery, signal, last known location, active modes. No sensors touched.',
+      'cmd.all.title': 'Full check',
+      'cmd.all.desc': 'Location, photo, and audio in sequence. For when you need to know everything at once.',
+      'cmd.ring.title': 'Ring',
+      'cmd.ring.desc': 'Rings the phone at full volume \u2014 even on silent. For finding it around the house.',
+      'cmd.optional': 'optional',
+
+      'gal.eyebrow': 'From the inside',
+      'gal.title': 'One screen.<br/>Five <em>certainties</em>.',
+      'gal.1.title': 'Home',
+      'gal.1.desc': "Device status, today's stats, recent history.",
+      'gal.join.title': 'New access request',
+      'gal.join.body': 'Approve only family members you trust.',
+      'gal.join.reject': 'Reject',
+      'gal.join.approve': 'Approve',
+      'gal.2.title': 'Join requests',
+      'gal.2.desc': 'Each new family member needs your approval before they can send commands.',
+      'gal.3.title': 'Audit log',
+      'gal.3.desc': 'Every request, on the record. Visible to whoever uses the device, anytime.',
+      'gal.3.barTitle': 'Audit log',
+      'gal.3.barSub': 'Every recorded event',
+      'gal.3.filterAll': 'All',
+      'gal.3.filterCmds': 'Commands',
+      'gal.3.filterBlocks': 'Blocked',
+      'gal.3.today': 'TODAY',
+      'gal.3.evt1': 'Location sent',
+      'gal.3.evt2': 'Photo captured',
+      'gal.3.evt2Sub': '@papa_rossi \u00b7 back camera',
+      'gal.3.evt3': 'Photo blocked (quiet hours)',
+      'gal.3.evt3Sub': '"School" window',
+      'gal.4.title': 'Quick buttons',
+      'gal.4.desc': '"I\u2019m fine" and "Help", always within reach. Configurable from settings.',
+      'gal.4.fine': "I'M FINE",
+      'gal.4.help': 'HELP',
+      'gal.5.title': 'Settings',
+      'gal.5.desc': 'Bot, approved family, quiet hours, advanced commands, diagnostics.',
+      'gal.5.barTitle': 'Settings',
+      'gal.5.sectionBot': 'BOT',
+      'gal.5.sectionBeh': 'BEHAVIOR',
+      'gal.5.bot.title': 'Dedicated bot',
+      'gal.5.bot.desc': 'Token, deep link, QR',
+      'gal.5.acc.title': 'Approved accounts',
+      'gal.5.acc.desc': '2 family members',
+      'gal.5.cap.title': 'Capabilities',
+      'gal.5.cap.desc': 'Photo, audio, ringer',
+      'gal.5.qh.title': 'Quiet hours',
+      'gal.5.qh.desc': 'When to block photo and audio',
+
+      'pr.eyebrow': 'Transparency',
+      'pr.title': 'You see <em>who</em> asked what,<br/>and when.',
+      'pr.lede': 'Every event lands in the on-device audit log \u2014 visible to whoever uses the phone, at any time. Commands, quiet-hour blocks, unauthorized attempts: all there, all readable.',
+      'pr.1.title': 'Persistent notification',
+      'pr.1.body': 'No hidden background service, ever. A fixed "listening to the family" notification is always visible while the app is running.',
+      'pr.2.title': 'Heads-up before every action',
+      'pr.2.body': 'Photo and audio always show a visible 5-second heads-up on the device before they run. No surprises.',
+      'pr.3.title': 'Token in the Keystore',
+      'pr.3.body': 'The Telegram bot token lives in the hardware-backed Android Keystore. Never exfiltrated, never in plain text.',
+      'pr.4.title': 'Family whitelist',
+      'pr.4.body': 'Only approved chats can send commands. Everything else is silently recorded and ignored.',
+      'pr.audit.head': 'Audit log \u00b7 today',
+      'pr.audit.1.title': 'Location sent',
+      'pr.audit.2.title': 'Photo captured',
+      'pr.audit.2.sub': '@papa_rossi \u00b7 back camera',
+      'pr.audit.3.title': 'Photo blocked (quiet hours)',
+      'pr.audit.3.sub': '"School" window',
+      'pr.audit.4.title': 'Status sent',
+      'pr.audit.4.sub': '@papa_rossi \u00b7 battery 78%, 4G',
+
+      'dl.eyebrow': 'Install',
+      'dl.title': "Scan. Install.<br/><em>You're in.</em>",
+      'dl.lede': "Family Tracker ships as a signed APK. Install it once on the device of the person who'll be helped \u2014 onboarding walks you through the next three minutes: bot creation, first approved family member, first test command.",
+      'dl.meta.android': 'Android 8.0+',
+      'dl.meta.signed': 'Signed APK',
+      'dl.meta.setup': '3-min setup',
+      'dl.cta': 'Download APK',
+      'dl.qr.label': 'Scan from Telegram',
+      'dl.qr.title': 'Open the download',
+      'dl.qr.sub': 'Point your phone here to get a direct link to the APK.',
+
+      'thanks.eyebrow': 'A small note',
+      'thanks.title': 'If it helped,<br/>just <em>say so</em>.',
+      'thanks.p1': 'I built Family Tracker for my own family. Then I let it loose \u2014 free, non-commercial, for anyone who needs it.',
+      'thanks.p2': "If it helped you, hearing that would be enough. And if you'd like to leave a coffee on the counter on your way out: thank you.",
+      'thanks.cta1': 'Buy me a coffee',
+      'thanks.cta2': 'Just say thanks',
+
+      'footer.tagline': 'For families that trust each other.',
+      'footer.madeWith': 'made with care',
+      'footer.platform': 'Android only \u00b7 sideload',
+
+      'legal.title': 'A note on responsibility',
+      'legal.body': 'Family Tracker is a free, non-commercial app I built for my own family and decided to share. It comes as-is, with no warranty of any kind, and I cannot accept liability for how it is used. Please install it only where there is documented consent \u2014 for minors under your parental responsibility, or for elderly relatives who know and agree. It is not a tool for surveilling anyone else.',
+    },
+    it: {
+      'nav.how': 'Come funziona',
+      'nav.privacy': 'Privacy',
+      'nav.commands': 'Comandi',
+      'nav.download': 'Scarica',
+
+      'hero.eyebrow': 'Una presenza discreta, quando serve',
+      'hero.title': "Le persone che ami,<br/><em>vicine</em>. Sempre.",
+      'hero.lede': "Quando hai bisogno di sapere che stanno bene, basta un messaggio. Il resto del tempo l'app tace — è lì come una luce lasciata accesa sul davanzale: veglia, non disturba.",
+      'hero.ctaPrimary': 'Scarica per Android',
+      'hero.ctaSecondary': 'Come funziona',
+      'hero.meta.android': 'Android 8+',
+      'hero.meta.lang': 'Italiano e Inglese',
+      'hero.meta.tracking': 'Zero tracking',
+
+      'phone.status': 'Stato',
+      'phone.active': 'Attivo',
+      'phone.connected': 'Familiari collegati: 2',
+      'phone.today': '📊 Oggi',
+      'phone.stat.locations': 'posizioni',
+      'phone.stat.photos': 'foto',
+      'phone.stat.audios': 'audio',
+      'phone.lastCheck': 'Ultimo controllo: 14:32',
+      'phone.quiet.title': 'Quiet hours attive',
+      'phone.quiet.range': 'Notte: 22:00 – 07:00',
+      'phone.now': 'ora',
+      'phone.hoursAgo': '2 h fa',
+      'phone.recent.location': 'Posizione',
+      'phone.recent.photo': 'Foto',
+      'phone.recent.by1': 'da @mamma_rossi',
+      'phone.recent.by2': 'da @papa_rossi',
+
+      'notif.now': 'ora',
+      'notif.title': 'Foto richiesta',
+      'notif.body': '@papa_rossi ha richiesto una foto. Scatto tra…',
+
+      'how.eyebrow': 'Una domanda. Una risposta. Niente in mezzo.',
+      'how.title': 'Tu chiedi da Telegram.<br/>Il telefono <em>risponde</em>.',
+      'how.lede': "Niente app per i familiari da scaricare. Tutti gli scambi avvengono dentro una normale chat Telegram. La tua famiglia scrive un comando — l'app sul telefono dell'assistito risponde in tempo reale, e l'evento finisce nello storico.",
+      'how.familyLabel': 'Familiare',
+      'how.phoneLabel': 'App sul telefono di Marco',
+      'how.typing': 'sta scrivendo…',
+      'how.loc.title': '📍 Posizione di Marco',
+      'how.phoneSending': 'Invio posizione…',
+      'how.phoneSent': 'Inviato a @mamma_rossi',
+      'how.phoneAck': 'Telegram ack · 0.6s',
+
+      'no.eyebrow': "Quello che non c'è",
+      'no.title': "Family Tracker è quello che <em>non fa</em>.",
+      'no.lede': 'Niente cloud da gestire, niente abbonamenti, niente posizione in continuo. Tre rinunce volute, che la rendono diversa da tutto il resto.',
+      'no.1.title': 'Backend custom',
+      'no.1.body': "Nessun server tra te e la famiglia. Tutta la logica vive sul telefono. Telegram è l'unico canale. Significa: niente abbonamento, niente account da creare, niente data breach a cui pensare.",
+      'no.2.title': 'Tracking continuo',
+      'no.2.body': "Il GPS si accende solo all'arrivo di un comando esplicito. Una posizione, quando serve. Mai prima. Nessun pallino in movimento su una mappa 24 ore su 24.",
+      'no.3.title': 'Sorveglianza nascosta',
+      'no.3.body': "L'app è palese: notifica permanente, storico accessibile sul dispositivo dell'assistito, preavviso prima di foto o audio. La fiducia familiare si costruisce così.",
+
+      'cmd.eyebrow': 'Comandi disponibili',
+      'cmd.title': 'Una <em>parola</em> per ogni cosa<br/>che vuoi sapere.',
+      'cmd.lede': "Tutti i comandi sono inviati come messaggi normali di Telegram, da una chat autorizzata. Il bot li elabora, l'app esegue, e la risposta torna nella chat — con preavviso quando serve.",
+      'cmd.loc.title': 'Posizione',
+      'cmd.loc.desc': 'GPS one-shot ad alta precisione. Risposta con location card Telegram, accuratezza e batteria.',
+      'cmd.photo.title': 'Scatto',
+      'cmd.photo.desc': 'Notifica visibile per 5 secondi sul dispositivo, poi scatto silenzioso. Foto inviata in chat.',
+      'cmd.audio.title': 'Registrazione',
+      'cmd.audio.desc': 'Registra fino a 30 secondi. Anche qui, sempre con preavviso visibile sul telefono.',
+      'cmd.status.title': 'Diagnostica',
+      'cmd.status.desc': 'Batteria, segnale, ultima posizione nota, modalità attive. Senza richiedere sensori.',
+      'cmd.all.title': 'Verifica completa',
+      'cmd.all.desc': 'Posizione + foto + audio in sequenza. Per quando è meglio sapere subito.',
+      'cmd.ring.title': 'Suoneria',
+      'cmd.ring.desc': 'Fa squillare il telefono al massimo volume, anche se in silenzioso. Per cercarlo in casa.',
+      'cmd.optional': 'opzionale',
+
+      'gal.eyebrow': 'Sul telefono di chi la usa',
+      'gal.title': 'Una sola schermata.<br/>Cinque <em>certezze</em>.',
+      'gal.1.title': 'Home',
+      'gal.1.desc': 'Stato del dispositivo, statistiche di oggi, storico recente',
+      'gal.join.title': 'Nuova richiesta di accesso',
+      'gal.join.body': 'Approva solo familiari fidati.',
+      'gal.join.reject': 'Rifiuta',
+      'gal.join.approve': 'Approva',
+      'gal.2.title': 'Join requests',
+      'gal.2.desc': 'Approva ogni nuovo familiare prima che possa inviare comandi',
+      'gal.3.title': 'Storico',
+      'gal.3.desc': 'Ogni richiesta è registrata. Visibile sempre a chi usa il dispositivo',
+      'gal.3.barTitle': 'Storico',
+      'gal.3.barSub': 'Tutti gli eventi registrati',
+      'gal.3.filterAll': 'Tutto',
+      'gal.3.filterCmds': 'Comandi',
+      'gal.3.filterBlocks': 'Blocchi',
+      'gal.3.today': 'OGGI',
+      'gal.3.evt1': 'Posizione inviata',
+      'gal.3.evt2': 'Foto scattata',
+      'gal.3.evt2Sub': '@papa_rossi · posteriore',
+      'gal.3.evt3': 'Foto bloccata (quiet)',
+      'gal.3.evt3Sub': 'finestra "Scuola"',
+      'gal.4.title': 'Bottoni rapidi',
+      'gal.4.desc': '"Sto bene" e "Aiuto" sempre a portata, configurabile dall\'utente',
+      'gal.4.fine': 'STO BENE',
+      'gal.4.help': 'AIUTO',
+      'gal.5.title': 'Impostazioni',
+      'gal.5.desc': 'Bot, account autorizzati, quiet hours, comandi avanzati, diagnostica',
+      'gal.5.barTitle': 'Impostazioni',
+      'gal.5.sectionBot': 'BOT',
+      'gal.5.sectionBeh': 'COMPORTAMENTO',
+      'gal.5.bot.title': 'Bot dedicato',
+      'gal.5.bot.desc': 'Token, deep link, QR',
+      'gal.5.acc.title': 'Account autorizzati',
+      'gal.5.acc.desc': '2 familiari',
+      'gal.5.cap.title': 'Capability',
+      'gal.5.cap.desc': 'Foto, audio, ringer',
+      'gal.5.qh.title': 'Quiet hours',
+      'gal.5.qh.desc': 'Quando bloccare foto/audio',
+
+      'pr.eyebrow': 'Trasparenza, sempre',
+      'pr.title': 'Vedi sempre <em>chi</em> ha chiesto<br/>cosa, e quando.',
+      'pr.lede': "Ogni evento è registrato nello storico — visibile su questo telefono, in ogni momento, anche da chi usa l'app. Le richieste, i blocchi durante le quiet hours, i tentativi non autorizzati: tutto tracciato, tutto consultabile.",
+      'pr.1.title': 'Notifica permanente',
+      'pr.1.body': 'Mai un servizio in background nascosto. Family Tracker è palese: una notifica fissa "in ascolto della famiglia" è sempre visibile.',
+      'pr.2.title': 'Preavviso prima di ogni azione',
+      'pr.2.body': 'Foto e audio richiedono una notifica visibile sul dispositivo con 5 secondi di grazia. Niente sorprese.',
+      'pr.3.title': 'Token nel Keystore',
+      'pr.3.body': "Il token del bot Telegram vive nell'Android Keystore hardware-backed. Mai esfiltrato, mai in chiaro.",
+      'pr.4.title': 'Whitelist familiari',
+      'pr.4.body': 'Solo le chat approvate possono inviare comandi. Tutto il resto viene silenziosamente registrato e ignorato.',
+      'pr.audit.head': 'Storico · oggi',
+      'pr.audit.1.title': 'Posizione inviata',
+      'pr.audit.2.title': 'Foto scattata',
+      'pr.audit.2.sub': '@papa_rossi · posteriore',
+      'pr.audit.3.title': 'Foto bloccata (quiet hours)',
+      'pr.audit.3.sub': 'finestra "Scuola"',
+      'pr.audit.4.title': 'Stato inviato',
+      'pr.audit.4.sub': '@papa_rossi · batteria 78%, 4G',
+
+      'dl.eyebrow': 'Scarica',
+      'dl.title': 'Inquadra. Installa.<br/><em>Inizia.</em>',
+      'dl.lede': "Family Tracker è distribuito come APK firmato. Si installa una volta sul telefono di chi sarà assistito — l'onboarding ti guida nei tre minuti successivi: creazione del bot Telegram, primo familiare, primo comando di prova.",
+      'dl.meta.android': 'Android 8.0+',
+      'dl.meta.signed': 'APK firmato',
+      'dl.meta.setup': 'Setup in 3 min',
+      'dl.cta': 'Scarica APK',
+      'dl.qr.label': 'Scansiona da Telegram',
+      'dl.qr.title': 'Apri il download',
+      'dl.qr.sub': 'Inquadra dal tuo telefono per ricevere il link diretto al file APK. Versione 0.1.0.',
+
+      'thanks.eyebrow': 'Un piccolo pensiero',
+      'thanks.title': "Se ti è stata d'aiuto,<br/>basta <em>dirlo</em>.",
+      'thanks.p1': "Family Tracker l'ho fatta per la mia famiglia. Poi l'ho lasciata in libertà, gratuita, senza scopo di lucro, per chiunque ne abbia bisogno.",
+      'thanks.p2': "Se ti è stata d'aiuto, anche solo farmelo sapere è bello. E se vuoi lasciarmi un caffè: grazie davvero.",
+      'thanks.cta1': 'Offrimi un caffè',
+      'thanks.cta2': 'Lascia un grazie',
+
+      'footer.tagline': 'Per famiglie che si fidano l\'una dell\'altra.',
+      'footer.madeWith': 'fatta con cura',
+      'footer.platform': 'Solo Android · sideload',
+
+      'legal.title': 'Una nota sulla responsabilità',
+      'legal.body': 'Family Tracker è un\'app gratuita e senza scopo di lucro che ho creato per la mia famiglia e che ho deciso di condividere. È fornita "così com\'è", senza garanzie di alcun tipo, e non posso assumermi responsabilità per il suo utilizzo. Usala solo dove c\'è consenso documentato — per minori sotto la tua responsabilità genitoriale, o per familiari anziani con il loro accordo. Non è uno strumento per sorvegliare nessun altro.',
+    },
+  };
+
+  function applyLanguage(lang) {
+    document.documentElement.lang = lang;
+    const dict = I18N[lang] || I18N.en;
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      const key = el.getAttribute('data-i18n');
+      if (dict[key] != null) el.innerHTML = dict[key];
+    });
+    document.querySelectorAll('.lang-switch button').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === lang);
+    });
+    try { localStorage.setItem('ft-lang', lang); } catch {}
+  }
+
+  // Init: stored preference > browser language > 'en'
+  (function initLang() {
+    let lang = 'en';
+    try { lang = localStorage.getItem('ft-lang') || lang; } catch {}
+    if (!I18N[lang]) {
+      // detect browser language but default to english (user preference)
+      const nav = (navigator.language || 'en').toLowerCase();
+      lang = nav.startsWith('it') ? 'it' : 'en';
+    }
+    applyLanguage(lang);
+  })();
+
+  document.querySelectorAll('.lang-switch button').forEach(b => {
+    b.addEventListener('click', () => applyLanguage(b.dataset.lang));
+  });
+
+  // ============================================================
+  // NAV scroll shadow
+  // ============================================================
+  const nav = document.getElementById('nav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 20);
+  });
+
+  // ============================================================
+  // Reveal-on-scroll
+  // ============================================================
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
+  }, { threshold: 0.12 });
+  document.querySelectorAll('.reveal').forEach(el => io.observe(el));
+
+  // ============================================================
+  // "How it works" chat sequence
+  // ============================================================
+  const chat = document.getElementById('chat-demo');
+  const phoneIdle = document.getElementById('phone-idle');
+  const phoneAction = document.getElementById('phone-action');
+  const phoneDone = document.getElementById('phone-done');
+  function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+  async function runFlow() {
+    while (true) {
+      chat.querySelectorAll('.bubble').forEach(b => b.classList.remove('shown'));
+      phoneIdle.style.display = '';
+      phoneAction.style.display = 'none';
+      phoneDone.style.display = 'none';
+      await delay(900);
+
+      chat.querySelector('[data-step="1"]').classList.add('shown');
+      await delay(800);
+
+      phoneIdle.style.display = 'none';
+      phoneAction.style.display = '';
+
+      const typing = chat.querySelector('[data-step="2"]');
+      typing.classList.add('shown');
+      await delay(1400);
+
+      phoneAction.style.display = 'none';
+      phoneDone.style.display = '';
+      typing.classList.remove('shown');
+      chat.querySelector('[data-step="3"]').classList.add('shown');
+      await delay(3000);
+    }
+  }
+  const howSection = document.getElementById('how');
+  let flowStarted = false;
+  const flowIo = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting && !flowStarted) { flowStarted = true; runFlow(); }
+    });
+  }, { threshold: 0.2 });
+  flowIo.observe(howSection);
+
+  // ============================================================
+  // Build mock QR
+  // ============================================================
+  (function buildQR() {
+    const qr = document.getElementById('qr');
+    if (!qr) return;
+    const N = 21;
+    const grid = Array.from({length: N}, () => Array(N).fill(0));
+    const placeFinder = (r, c) => {
+      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
+        if (i === 0 || i === 6 || j === 0 || j === 6 ||
+            (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
+          grid[r + i][c + j] = 1;
+        }
+      }
+    };
+    placeFinder(0, 0); placeFinder(0, N - 7); placeFinder(N - 7, 0);
+    for (let i = 8; i < N - 8; i++) {
+      grid[6][i] = i % 2 === 0 ? 1 : 0;
+      grid[i][6] = i % 2 === 0 ? 1 : 0;
+    }
+    let seed = 19260817;
+    const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        if ((i < 8 && j < 8) || (i < 8 && j >= N - 8) || (i >= N - 8 && j < 8) ||
+            (i === 6) || (j === 6)) continue;
+        if (rand() > 0.5) grid[i][j] = 1;
+      }
+    }
+    const cx = Math.floor(N / 2), cy = Math.floor(N / 2);
+    for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) grid[cy + i][cx + j] = 0;
+
+    qr.innerHTML = '';
+    for (let i = 0; i < N; i++) {
+      for (let j = 0; j < N; j++) {
+        const div = document.createElement('div');
+        if (grid[i][j]) div.className = 'cell';
+        qr.appendChild(div);
+      }
+    }
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; padding: 6px; border-radius: 8px; line-height: 0;`;
+    overlay.innerHTML = `
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
+        <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+        <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+        <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+      </svg>`;
+    qr.appendChild(overlay);
+  })();
+</script>
+</body>
+</html>
