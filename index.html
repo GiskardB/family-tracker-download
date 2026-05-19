@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <template id="__bundler_thumbnail">
   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
@@ -1059,7 +1060,7 @@
           <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-i18n="dl.meta.setup">3-min setup</span></div>
         </div>
         <div class="download-ctas">
-          <a href="#" class="btn btn-warm">
+          <a href="https://github.com/GiskardB/family-tracker-download/releases/latest" class="btn btn-warm" data-dl-apk target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7,10 12,15 17,10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             <span data-i18n="dl.cta">Download APK</span>
           </a>
@@ -1086,14 +1087,11 @@
       <h2 class="display" data-i18n="thanks.title">If it helped,<br/>just <em>say so</em>.</h2>
       <p data-i18n="thanks.p1">I built Family Tracker for my family. Then I set it loose — free, non-commercial, for anyone who needs it.</p>
       <p data-i18n="thanks.p2">If it helped you, even just saying so is nice. And if you'd like to leave a coffee behind: thank you.</p>
-      <div class="donate-ctas">
-        <a href="#" class="btn btn-warm">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 010 8h-1"/><path d="M2 8h16v9a4 4 0 01-4 4H6a4 4 0 01-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/></svg>
-          <span data-i18n="thanks.cta1">Buy me a coffee</span>
-        </a>
-        <a href="#" class="btn btn-ghost" style="border-color: var(--warm-soft); color: var(--warm-deep);">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
-          <span data-i18n="thanks.cta2">Just say thanks</span>
+      <div class="donate-ctas" style="align-items: center;">
+        <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="giskard80" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
+        <a href="https://paypal.me/giskard80" target="_blank" rel="noopener" class="btn" style="background: #003087; color: #fff; border: 1px solid #003087;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.93.93 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
+          <span>PayPal</span>
         </a>
       </div>
     </div>
@@ -1548,55 +1546,52 @@
   flowIo.observe(howSection);
 
   // ============================================================
-  // Build mock QR
+  // Latest-release APK: update download buttons + QR dynamically
+  // Reads https://api.github.com/repos/<repo>/releases/latest, picks
+  // the first .apk asset, and points both the button(s) and the QR
+  // to its browser_download_url. Falls back to the /releases/latest
+  // page if the API is unreachable.
   // ============================================================
-  (function buildQR() {
-    const qr = document.getElementById('qr');
-    if (!qr) return;
-    const N = 21;
-    const grid = Array.from({length: N}, () => Array(N).fill(0));
-    const placeFinder = (r, c) => {
-      for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
-        if (i === 0 || i === 6 || j === 0 || j === 6 ||
-            (i >= 2 && i <= 4 && j >= 2 && j <= 4)) {
-          grid[r + i][c + j] = 1;
-        }
-      }
-    };
-    placeFinder(0, 0); placeFinder(0, N - 7); placeFinder(N - 7, 0);
-    for (let i = 8; i < N - 8; i++) {
-      grid[6][i] = i % 2 === 0 ? 1 : 0;
-      grid[i][6] = i % 2 === 0 ? 1 : 0;
-    }
-    let seed = 19260817;
-    const rand = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-    for (let i = 0; i < N; i++) {
-      for (let j = 0; j < N; j++) {
-        if ((i < 8 && j < 8) || (i < 8 && j >= N - 8) || (i >= N - 8 && j < 8) ||
-            (i === 6) || (j === 6)) continue;
-        if (rand() > 0.5) grid[i][j] = 1;
-      }
-    }
-    const cx = Math.floor(N / 2), cy = Math.floor(N / 2);
-    for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) grid[cy + i][cx + j] = 0;
+  (async function setupDownload() {
+    const REPO = 'GiskardB/family-tracker-download';
+    const FALLBACK_URL = `https://github.com/${REPO}/releases/latest`;
+    const qrEl = document.getElementById('qr');
+    const dlBtns = document.querySelectorAll('[data-dl-apk]');
 
-    qr.innerHTML = '';
-    for (let i = 0; i < N; i++) {
-      for (let j = 0; j < N; j++) {
-        const div = document.createElement('div');
-        if (grid[i][j]) div.className = 'cell';
-        qr.appendChild(div);
-      }
+    function setHref(url) {
+      dlBtns.forEach(a => a.setAttribute('href', url));
     }
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); background: #fff; padding: 6px; border-radius: 8px; line-height: 0;`;
-    overlay.innerHTML = `
-      <svg width="28" height="28" viewBox="0 0 40 40" fill="none">
-        <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
-        <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
-        <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
-      </svg>`;
-    qr.appendChild(overlay);
+
+    function renderQR(url) {
+      if (!qrEl || typeof QRCode === 'undefined') return;
+      qrEl.innerHTML = '';
+      // Override the 21-column grid layout used by the old mock QR
+      qrEl.style.display = 'block';
+      qrEl.style.gridTemplateColumns = '';
+      new QRCode(qrEl, {
+        text: url,
+        width: 220,
+        height: 220,
+        colorDark: '#1F1410',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    }
+
+    let targetUrl = FALLBACK_URL;
+    try {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/releases/latest`, {
+        headers: { 'Accept': 'application/vnd.github+json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        const apk = (data.assets || []).find(a => a && a.name && a.name.toLowerCase().endsWith('.apk'));
+        if (apk && apk.browser_download_url) targetUrl = apk.browser_download_url;
+      }
+    } catch (e) { /* keep fallback */ }
+
+    setHref(targetUrl);
+    renderQR(targetUrl);
   })();
 </script>
 </body>
