@@ -122,14 +122,27 @@
 
   /* HERO */
   .hero { padding: 160px 0 100px; position: relative; overflow: hidden; }
-  .hero-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; }
-  @media (max-width: 960px) {
-    .hero { padding: 140px 0 60px; }
+  .hero-grid { display: grid; grid-template-columns: 1fr 1.22fr; gap: 44px; align-items: center; }
+  @media (max-width: 1080px) {
     .hero-grid { grid-template-columns: 1fr; gap: 48px; }
   }
-  .hero-title { font-size: clamp(46px, 7.2vw, 96px); }
+  @media (max-width: 960px) {
+    .hero { padding: 140px 0 60px; }
+  }
+  .hero-title { font-size: clamp(46px, 6.2vw, 86px); }
   .hero-lede { margin-top: 28px; max-width: 500px; font-size: 19px; color: var(--ink-soft); line-height: 1.6; }
   .hero-ctas { margin-top: 36px; display: flex; gap: 14px; flex-wrap: wrap; }
+
+  /* Hero duet: app phone + Telegram chat side by side */
+  .hero-phones {
+    display: flex; gap: 18px; align-items: flex-end; justify-content: center;
+    position: relative;
+  }
+  .hero-phones .phone.lg { width: 282px; }
+  @media (max-width: 620px) {
+    .hero-phones { flex-direction: column; align-items: center; gap: 32px; }
+    .hero-phones .phone.lg { width: 308px; }
+  }
 
   .btn {
     display: inline-flex; align-items: center; gap: 9px;
@@ -222,6 +235,238 @@
   .notif-title { font-size: 12.5px; font-weight: 700; color: var(--ink); margin-top: 2px; display: flex; align-items: center; gap: 5px; }
   .notif-body p { font-size: 11px; color: #555; margin: 2px 0 0; }
   .notif-count { margin-left: auto; font-family: var(--mono); font-size: 14px; font-weight: 700; color: var(--warm); }
+
+  /* TELEGRAM CHAT MOCKUP — alongside the app phone in the hero */
+  .tg-phone {
+    width: 264px; aspect-ratio: 380 / 800;
+    background: #FFFFFF; border-radius: 38px;
+    box-shadow:
+      0 1px 1px rgba(74,46,30,0.05),
+      0 6px 18px rgba(74,46,30,0.08),
+      0 32px 80px rgba(74,46,30,0.12),
+      inset 0 0 0 1.5px var(--line);
+    overflow: hidden; display: flex; flex-direction: column;
+    position: relative;
+  }
+  @media (max-width: 620px) { .tg-phone { width: 308px; } }
+  .tg-phone .status {
+    height: 30px; flex: 0 0 auto; padding: 0 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11.5px; font-weight: 600; color: #1F1F1F;
+    font-variant-numeric: tabular-nums; background: #FFFFFF;
+  }
+  .tg-phone .gesture { height: 22px; flex: 0 0 auto; display: flex; align-items: center; justify-content: center; background: #ECEBE3; }
+  .tg-phone .gesture::after { content: ''; width: 100px; height: 4px; border-radius: 2px; background: rgba(0,0,0,0.4); }
+
+  /* Header */
+  .tg-header {
+    flex: 0 0 auto; padding: 6px 10px 8px;
+    background: #FFFFFF; border-bottom: 1px solid #E8E6E0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .tg-back { width: 28px; height: 28px; border-radius: 14px; border: none; background: transparent; color: #1F1F1F; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+  .tg-avatar {
+    width: 32px; height: 32px; border-radius: 16px;
+    background: linear-gradient(135deg, #E8907C, #C56A3F);
+    color: #fff; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto; position: relative; letter-spacing: 0.2px;
+  }
+  .tg-avatar .tg-online {
+    position: absolute; top: -6px; left: -4px;
+    background: #4C9BE0; color: #fff; font-size: 9px; font-weight: 700;
+    padding: 1px 4px; border-radius: 8px; line-height: 1;
+    border: 1.5px solid #fff; min-width: 18px; text-align: center;
+  }
+  .tg-title { flex: 1; min-width: 0; line-height: 1.2; }
+  .tg-title .tg-name { font-size: 13px; font-weight: 600; color: #1F1F1F; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: -0.1px; }
+  .tg-title .tg-sub { font-size: 10.5px; color: #707579; margin-top: 1px; }
+  .tg-menu { width: 28px; height: 28px; border-radius: 14px; padding: 0; background: transparent; border: none; color: #1F1F1F; font-size: 18px; line-height: 1; cursor: pointer; }
+
+  /* Chat background — Telegram sage with subtle doodle overlay */
+  .tg-bg {
+    flex: 1; min-height: 0; padding: 8px 8px 6px; overflow: hidden;
+    position: relative;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(255,255,255,0.18), transparent 40%),
+      radial-gradient(circle at 80% 60%, rgba(255,255,255,0.15), transparent 50%),
+      linear-gradient(180deg, #B8C996 0%, #A8BC85 100%);
+  }
+  .tg-bg::before {
+    content: ''; position: absolute; inset: 0; pointer-events: none;
+    background-image:
+      radial-gradient(circle at 25% 30%, rgba(255,255,255,0.18) 1.5px, transparent 2px),
+      radial-gradient(circle at 75% 15%, rgba(255,255,255,0.15) 1.5px, transparent 2px),
+      radial-gradient(circle at 60% 75%, rgba(255,255,255,0.15) 1.5px, transparent 2px),
+      radial-gradient(circle at 15% 85%, rgba(255,255,255,0.18) 1.5px, transparent 2px),
+      radial-gradient(circle at 90% 40%, rgba(255,255,255,0.13) 1.5px, transparent 2px);
+    background-size: 70px 70px; opacity: 0.6;
+  }
+  .tg-scroll {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; gap: 6px;
+    height: 100%; overflow: hidden;
+  }
+
+  /* Bubbles */
+  .tg-msg { display: flex; max-width: 95%; }
+  .tg-msg.out { align-self: flex-end; }
+  .tg-msg.in  { align-self: flex-start; }
+
+  .tg-cmd-pill {
+    background: #E2F3D1; color: #1F2E0F;
+    padding: 4px 9px; border-radius: 14px;
+    font-family: var(--mono); font-size: 11.5px; font-weight: 500;
+    display: inline-flex; align-items: baseline; gap: 6px;
+    box-shadow: 0 1px 0 rgba(0,0,0,0.04);
+  }
+  .tg-cmd-pill .tg-time { font-family: var(--sans); font-size: 9.5px; color: #5A7A3A; font-weight: 500; letter-spacing: 0.1px; }
+  .tg-cmd-pill .tg-time::after { content: ' ✓✓'; color: #4C9BE0; font-weight: 700; }
+
+  .tg-card { background: #FFFFFF; border-radius: 12px; box-shadow: 0 1px 1px rgba(0,0,0,0.08); padding: 8px 10px; max-width: 200px; position: relative; }
+  .tg-card .tg-time-corner { position: absolute; bottom: 5px; right: 8px; font-size: 9px; color: #6B7570; font-variant-numeric: tabular-nums; }
+
+  /* Big location card with map + body */
+  .tg-loc { padding: 0; max-width: 215px; overflow: hidden; }
+  .tg-map { height: 96px; width: 100%; position: relative; overflow: hidden; background: #E8E0CC; }
+  .tg-map svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .tg-map .tg-pin {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -100%);
+    width: 18px; height: 26px; pointer-events: none;
+    filter: drop-shadow(0 2px 3px rgba(0,0,0,0.25));
+  }
+  .tg-map .tg-pin svg { position: static; width: 100%; height: 100%; }
+  .tg-map .tg-time-overlay {
+    position: absolute; bottom: 6px; right: 6px;
+    background: rgba(0,0,0,0.55); color: #fff;
+    font-size: 9px; font-weight: 500; padding: 1px 6px; border-radius: 8px;
+    backdrop-filter: blur(2px);
+  }
+  .tg-loc .tg-loc-body { padding: 7px 9px 8px; background: #FAF8F3; }
+  .tg-loc .tg-loc-from {
+    display: inline-block; padding: 1px 6px; background: #F3E4D5; color: #8E4824;
+    font-family: var(--mono); font-size: 9px; font-weight: 600;
+    border-radius: 4px; margin-bottom: 4px;
+  }
+  .tg-loc .tg-loc-line { display: flex; align-items: baseline; gap: 5px; font-size: 11px; color: #1F1F1F; line-height: 1.4; }
+  .tg-loc .tg-loc-line .tg-loc-ico { font-size: 10px; flex: 0 0 auto; width: 12px; }
+  .tg-loc .tg-loc-line strong { font-weight: 600; }
+  .tg-loc .tg-loc-line .tg-loc-key { color: #6B7570; }
+
+  /* Stylized "photo" — partial bubble fading at the top of the chat */
+  .tg-photo {
+    align-self: flex-end; max-width: 85%;
+    margin-top: -28px; /* peeks in from above the visible area */
+    margin-bottom: 4px;
+    background: #FFFFFF; border-radius: 12px; padding: 4px;
+    box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+    position: relative;
+  }
+  .tg-photo .tg-photo-img {
+    width: 100%; height: 60px; border-radius: 8px; overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 80% at 40% 35%, #E8B894 0%, #C56A3F 60%, transparent 70%),
+      radial-gradient(ellipse 50% 30% at 38% 20%, #4A2E1E 0%, transparent 60%),
+      linear-gradient(180deg, #FBEEDF 0%, #F4E3CB 100%);
+    position: relative;
+  }
+  .tg-photo .tg-photo-caption { font-size: 9.5px; color: #1F1F1F; padding: 4px 6px 2px; display: flex; align-items: center; gap: 4px; }
+  .tg-photo .tg-photo-caption b { font-weight: 600; }
+  .tg-photo .tg-photo-caption .tg-time-inline { margin-left: auto; font-size: 9px; color: #6B7570; }
+
+  /* Audio voice-note bubble (Telegram-style) */
+  .tg-card.tg-audio {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 36px 8px 8px; max-width: 200px; min-width: 170px;
+  }
+  .tg-audio-play {
+    width: 32px; height: 32px; border-radius: 16px;
+    background: var(--warm); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex: 0 0 auto;
+  }
+  .tg-audio-meta { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  .tg-waveform { display: flex; align-items: center; gap: 1.5px; height: 18px; color: var(--warm); }
+  .tg-waveform span { display: block; width: 2px; background: currentColor; border-radius: 1px; }
+  .tg-waveform span:nth-child(1)  { height: 22%; }
+  .tg-waveform span:nth-child(2)  { height: 44%; }
+  .tg-waveform span:nth-child(3)  { height: 65%; }
+  .tg-waveform span:nth-child(4)  { height: 80%; }
+  .tg-waveform span:nth-child(5)  { height: 55%; }
+  .tg-waveform span:nth-child(6)  { height: 38%; }
+  .tg-waveform span:nth-child(7)  { height: 70%; }
+  .tg-waveform span:nth-child(8)  { height: 90%; }
+  .tg-waveform span:nth-child(9)  { height: 70%; }
+  .tg-waveform span:nth-child(10) { height: 50%; }
+  .tg-waveform span:nth-child(11) { height: 32%; }
+  .tg-waveform span:nth-child(12) { height: 60%; }
+  .tg-waveform span:nth-child(13) { height: 78%; }
+  .tg-waveform span:nth-child(14) { height: 45%; }
+  .tg-waveform span:nth-child(15) { height: 30%; }
+  .tg-waveform span:nth-child(16) { height: 18%; }
+  .tg-waveform span:nth-child(n+9) { color: #B0B5B0; } /* unplayed portion */
+  .tg-audio-info { font-size: 9.5px; color: #6B7570; font-variant-numeric: tabular-nums; display: flex; align-items: center; gap: 6px; }
+
+  /* Input bar */
+  .tg-input {
+    flex: 0 0 auto; padding: 6px 8px;
+    background: #F3F2EC; border-top: 1px solid #E0DED7;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tg-input .tg-input-btn {
+    width: 22px; height: 22px; border-radius: 11px; border: none;
+    background: transparent; color: #707579;
+    display: flex; align-items: center; justify-content: center; padding: 0;
+    flex: 0 0 auto; font-size: 14px;
+  }
+  .tg-input .tg-input-field { flex: 1; min-width: 0; background: #FFFFFF; border: 1px solid #E0DED7; border-radius: 14px; padding: 4px 10px; font-size: 11px; color: #B8BAB8; }
+  .tg-input .tg-mic { width: 26px; height: 26px; border-radius: 13px; background: #4C9BE0; color: #fff; display: flex; align-items: center; justify-content: center; flex: 0 0 auto; }
+
+  /* Chat replay animation — runs ONCE on page load */
+  .tg-msg, .tg-photo {
+    opacity: 0; transform: translateY(8px);
+    animation: ftChatIn 520ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  }
+  .tg-photo               { animation-delay: 400ms; }
+  .tg-msg.delay-traccia   { animation-delay: 1400ms; }
+  .tg-msg.delay-loc       { animation-delay: 2700ms; }
+  .tg-msg.delay-audio-cmd { animation-delay: 4000ms; }
+  .tg-msg.delay-audio-rep { animation-delay: 5200ms; }
+  @keyframes ftChatIn { to { opacity: 1; transform: translateY(0); } }
+
+  /* "Typing…" indicator that pulses while the bot prepares its reply */
+  .tg-typing {
+    align-self: flex-start;
+    background: #FFFFFF; border-radius: 12px;
+    padding: 6px 10px; box-shadow: 0 1px 1px rgba(0,0,0,0.08);
+    display: inline-flex; gap: 3px; align-items: center; height: 22px;
+    opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0;
+    margin: 0; overflow: hidden;
+    animation: ftChatTyping 1100ms forwards;
+  }
+  .tg-typing.before-loc   { animation-delay: 1900ms; }
+  .tg-typing.before-audio { animation-delay: 4500ms; }
+  .tg-typing span {
+    width: 4px; height: 4px; border-radius: 2px; background: #707579;
+    animation: ftChatTypingDot 1s ease-in-out infinite;
+  }
+  .tg-typing span:nth-child(2) { animation-delay: 0.15s; }
+  .tg-typing span:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes ftChatTyping {
+    0%   { opacity: 0; max-height: 0;  padding-top: 0; padding-bottom: 0; }
+    20%  { opacity: 1; max-height: 30px; padding-top: 6px; padding-bottom: 6px; }
+    75%  { opacity: 1; max-height: 30px; padding-top: 6px; padding-bottom: 6px; }
+    100% { opacity: 0; max-height: 0;  padding-top: 0; padding-bottom: 0; }
+  }
+  @keyframes ftChatTypingDot {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30%           { opacity: 1;    transform: translateY(-2px); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .tg-msg, .tg-photo, .tg-typing { opacity: 1; transform: none; animation: none; max-height: none; }
+    .tg-typing { display: none; }
+  }
 
   /* Sections */
   section { padding: 100px 0; position: relative; }
@@ -478,9 +723,10 @@
       </div>
 
       <div style="position: relative; display: flex; justify-content: center;">
-        <div style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 80%; height: 60%; background: radial-gradient(ellipse, rgba(197,106,63,0.3), transparent 70%); filter: blur(40px); pointer-events: none;"></div>
+        <div style="position: absolute; bottom: -40px; left: 50%; transform: translateX(-50%); width: 90%; height: 60%; background: radial-gradient(ellipse, rgba(197,106,63,0.3), transparent 70%); filter: blur(40px); pointer-events: none;"></div>
 
-        <div class="phone lg">
+        <div class="hero-phones">
+          <div class="phone lg">
           <div class="status">
             <span>14:32</span>
             <span style="display: flex; align-items: center; gap: 5px;">
@@ -577,6 +823,152 @@
             <div class="notif-count">5s</div>
           </div>
         </div>
+
+        <!-- Telegram chat companion phone -->
+        <div class="tg-phone" aria-label="Telegram chat with the Family Tracker bot">
+          <div class="status">
+            <span>15:55</span>
+            <span style="display: flex; align-items: center; gap: 5px;">
+              <svg width="13" height="9" viewBox="0 0 13 9" fill="currentColor"><rect x="0" y="6" width="2" height="3"/><rect x="3" y="4" width="2" height="5"/><rect x="6" y="2" width="2" height="7"/><rect x="9" y="0" width="2" height="9"/></svg>
+              <span style="font-size: 10px;">4G</span>
+              73%
+              <div style="display: inline-block; width: 18px; height: 9px; border: 1.3px solid currentColor; border-radius: 2px; padding: 1px;"><div style="height: 100%; width: 73%; background: currentColor;"></div></div>
+            </span>
+          </div>
+
+          <div class="tg-header">
+            <button class="tg-back" aria-label="Back">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+            </button>
+            <div class="tg-avatar">
+              <span class="tg-online">81</span>
+              <span>MR</span>
+            </div>
+            <div class="tg-title">
+              <div class="tg-name">Family Tracker · Marco</div>
+              <div class="tg-sub">bot</div>
+            </div>
+            <button class="tg-menu" aria-label="Menu">⋮</button>
+          </div>
+
+          <div class="tg-bg">
+            <div class="tg-scroll">
+              <!-- Photo response (peek from the top — context from a prior /foto) -->
+              <div class="tg-photo">
+                <div class="tg-photo-img" role="img" aria-label="Stylized portrait photo"></div>
+                <div class="tg-photo-caption">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#5A7A3A" stroke-width="2"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z"/><circle cx="12" cy="13" r="4"/></svg>
+                  <span>Da Marco · <b>frontale</b></span>
+                  <span class="tg-time-inline">15:04</span>
+                </div>
+              </div>
+
+              <!-- /traccia — il comando chiave -->
+              <div class="tg-msg out delay-traccia">
+                <div class="tg-cmd-pill">/traccia<span class="tg-time">15:55</span></div>
+              </div>
+
+              <div class="tg-typing before-loc" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+
+              <!-- Location card with map -->
+              <div class="tg-msg in delay-loc">
+                <div class="tg-card tg-loc">
+                  <div class="tg-map">
+                    <svg viewBox="0 0 200 96" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
+                      <rect width="200" height="96" fill="#EEE6D2"/>
+                      <rect x="0" y="0" width="58" height="38" fill="#F5EFDD"/>
+                      <rect x="142" y="0" width="58" height="38" fill="#F5EFDD"/>
+                      <rect x="0" y="58" width="58" height="38" fill="#F5EFDD"/>
+                      <rect x="142" y="58" width="58" height="38" fill="#F5EFDD"/>
+                      <rect x="0" y="38" width="36" height="20" fill="#D9DFAA"/>
+                      <rect x="164" y="38" width="36" height="20" fill="#D9DFAA"/>
+                      <rect x="0" y="38" width="200" height="20" fill="#FFFFFF"/>
+                      <rect x="0" y="47" width="200" height="2" fill="#E8C66A"/>
+                      <rect x="58" y="0" width="14" height="96" fill="#FFFFFF"/>
+                      <rect x="128" y="0" width="14" height="96" fill="#FFFFFF"/>
+                      <g stroke="#D6CCB0" stroke-width="0.6" fill="none">
+                        <line x1="20" y1="0" x2="20" y2="38"/>
+                        <line x1="38" y1="0" x2="38" y2="38"/>
+                        <line x1="160" y1="0" x2="160" y2="38"/>
+                        <line x1="180" y1="0" x2="180" y2="38"/>
+                        <line x1="20" y1="58" x2="20" y2="96"/>
+                        <line x1="38" y1="58" x2="38" y2="96"/>
+                        <line x1="160" y1="58" x2="160" y2="96"/>
+                        <line x1="180" y1="58" x2="180" y2="96"/>
+                      </g>
+                    </svg>
+                    <div class="tg-pin">
+                      <svg viewBox="0 0 24 36" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 0C5.4 0 0 5.4 0 12c0 8 12 24 12 24s12-16 12-24C24 5.4 18.6 0 12 0z" fill="#E54B4B"/>
+                        <circle cx="12" cy="12" r="4.5" fill="#FFFFFF"/>
+                      </svg>
+                    </div>
+                    <div class="tg-time-overlay">15:55</div>
+                  </div>
+                  <div class="tg-loc-body">
+                    <span class="tg-loc-from">/traccia</span>
+                    <div class="tg-loc-line"><span class="tg-loc-ico">📍</span> <strong data-i18n="tg.loc.title">Posizione di Marco</strong></div>
+                    <div class="tg-loc-line"><span class="tg-loc-key" data-i18n="tg.loc.accuracy">Precisione:</span> ±22m</div>
+                    <div class="tg-loc-line"><span class="tg-loc-ico">🔋</span> <span class="tg-loc-key" data-i18n="tg.loc.battery">Batteria:</span> 73%</div>
+                    <div class="tg-loc-line"><span class="tg-loc-ico">🕐</span> 19/05/2026, 15:55</div>
+                  </div>
+                  <span class="tg-time-corner">15:55</span>
+                </div>
+              </div>
+
+              <!-- /audio -->
+              <div class="tg-msg out delay-audio-cmd">
+                <div class="tg-cmd-pill">/audio<span class="tg-time">15:56</span></div>
+              </div>
+
+              <div class="tg-typing before-audio" aria-hidden="true">
+                <span></span><span></span><span></span>
+              </div>
+
+              <!-- Audio voice-note reply -->
+              <div class="tg-msg in delay-audio-rep">
+                <div class="tg-card tg-audio">
+                  <div class="tg-audio-play" aria-label="Play voice note">
+                    <svg width="11" height="11" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>
+                  </div>
+                  <div class="tg-audio-meta">
+                    <div class="tg-waveform" aria-hidden="true">
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                      <span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="tg-audio-info">
+                      <span>0:05</span>
+                      <span style="color:#B0B5B0;">·</span>
+                      <span data-i18n="tg.audio.from">Da Marco</span>
+                    </div>
+                  </div>
+                  <span class="tg-time-corner">15:56</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="tg-input">
+            <button class="tg-input-btn" aria-label="Attach">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
+            <button class="tg-input-btn" aria-label="Emoji">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" y1="9" x2="9.01" y2="9"/><line x1="15" y1="9" x2="15.01" y2="9"/></svg>
+            </button>
+            <div class="tg-input-field" data-i18n="tg.message">Messaggio</div>
+            <button class="tg-input-btn" aria-label="Attach file">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <div class="tg-mic">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/></svg>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
@@ -1052,11 +1444,11 @@
         <div class="eyebrow" style="color: var(--warm-soft);"><span style="font-family: var(--mono); font-weight: 500;">05</span> <span data-i18n="dl.eyebrow">Get it</span></div>
         <h2 style="color: #fff;" data-i18n="dl.title">Scan. Install.<br/><em>Start.</em></h2>
         <p class="download-lede" data-i18n="dl.lede">
-          Family Tracker is shipped as a signed APK. Install it once on the phone of the person who will be assisted — the onboarding guides you through the next three minutes: Telegram bot creation, first family member, first test command.
+          Family Tracker is shipped as an APK. Install it once on the phone of the person who will be assisted — the onboarding guides you through the next three minutes: Telegram bot creation, first family member, first test command.
         </p>
         <div class="download-meta">
           <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="13" rx="2"/></svg> <span data-i18n="dl.meta.android">Android 8.0+</span></div>
-          <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> <span data-i18n="dl.meta.signed">Signed APK</span></div>
+          <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg> <span data-i18n="dl.meta.signed">APK</span></div>
           <div><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> <span data-i18n="dl.meta.setup">3-min setup</span></div>
         </div>
         <div class="download-ctas">
@@ -1070,9 +1462,9 @@
       <div class="reveal">
         <div class="qr-block">
           <div class="qr-img" id="qr"></div>
-          <div class="label" data-i18n="dl.qr.label">Scan from Telegram</div>
+          <div class="label" data-i18n="dl.qr.label">Scan QRCode</div>
           <div class="title" data-i18n="dl.qr.title">Open the download</div>
-          <div class="sub" data-i18n="dl.qr.sub">Point your phone here to get the direct link to the APK. Version 0.1.0.</div>
+          <div class="sub" data-i18n="dl.qr.sub">Point your phone here to get the direct link to the APK.</div>
         </div>
       </div>
     </div>
@@ -1089,9 +1481,9 @@
       <p data-i18n="thanks.p2">If it helped you, even just saying so is nice. And if you'd like to leave a coffee behind: thank you.</p>
       <div class="donate-ctas" style="align-items: center;">
         <script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="giskard80" data-color="#FFDD00" data-emoji=""  data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff" ></script>
-        <a href="https://paypal.me/giskard80" target="_blank" rel="noopener" class="btn" style="background: #003087; color: #fff; border: 1px solid #003087;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.93.93 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
-          <span>PayPal</span>
+        <a href="https://paypal.me/giskard80" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 0 20px; height: 45px; border-radius: 5px; background: #003087; color: #fff; font-family: 'Manrope', sans-serif; font-size: 16px; font-weight: 700; text-decoration: none; box-sizing: border-box; line-height: 1; box-shadow: 0 1px 2px rgba(190,190,190,0.5); border: 1px solid transparent; transition: opacity 0.2s;" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944.901C5.026.382 5.474 0 5.998 0h7.46c2.57 0 4.578.543 5.69 1.81 1.01 1.15 1.304 2.42 1.012 4.287-.023.143-.047.288-.077.437-.983 5.05-4.349 6.797-8.647 6.797h-2.19c-.524 0-.968.382-1.05.9l-1.12 7.106zm14.146-14.42a3.35 3.35 0 0 0-.607-.541c-.013.076-.026.175-.041.254-.93 4.778-4.005 7.201-9.138 7.201h-2.19a.563.563 0 0 0-.556.479l-1.187 7.527h-.506l-.24 1.516a.56.56 0 0 0 .554.647h3.882c.46 0 .85-.334.922-.788.06-.26.76-4.852.816-5.09a.93.93 0 0 1 .923-.788h.58c3.76 0 6.705-1.528 7.565-5.946.36-1.847.174-3.388-.777-4.471z"/></svg>
+          <span>Pay with PayPal</span>
         </a>
       </div>
     </div>
@@ -1127,7 +1519,7 @@
       </div>
     </div>
     <div class="footer-tag">
-      <span>© 2026 Family Tracker · <span data-i18n="footer.madeWith">made with care</span></span>
+      <span>© 2026 Family Tracker · <span data-i18n="footer.madeWith">made with care</span> · <a href="https://github.com/GiskardB" target="_blank" rel="noopener" style="color: inherit; text-decoration: underline;">Giskard</a></span>
       <span data-i18n="footer.platform">Android only · sideload</span>
     </div>
   </div>
@@ -1173,6 +1565,12 @@
       'notif.now': 'now',
       'notif.title': 'Photo requested',
       'notif.body': '@papa_rossi asked for a photo. Capturing in\u2026',
+
+      'tg.loc.title': "Marco's location",
+      'tg.loc.accuracy': 'Accuracy:',
+      'tg.loc.battery': 'Battery:',
+      'tg.audio.from': 'From Marco',
+      'tg.message': 'Message',
 
       'how.eyebrow': 'Ask. Answer. Done.',
       'how.title': 'You ask from Telegram.<br/>The phone <em>answers</em>.',
@@ -1272,12 +1670,12 @@
 
       'dl.eyebrow': 'Install',
       'dl.title': "Scan. Install.<br/><em>You're in.</em>",
-      'dl.lede': "Family Tracker ships as a signed APK. Install it once on the device of the person who'll be helped \u2014 onboarding walks you through the next three minutes: bot creation, first approved family member, first test command.",
+      'dl.lede': "Family Tracker ships as an APK. Install it once on the device of the person who'll be helped \u2014 onboarding walks you through the next three minutes: bot creation, first approved family member, first test command.",
       'dl.meta.android': 'Android 8.0+',
-      'dl.meta.signed': 'Signed APK',
+      'dl.meta.signed': 'APK',
       'dl.meta.setup': '3-min setup',
       'dl.cta': 'Download APK',
-      'dl.qr.label': 'Scan from Telegram',
+      'dl.qr.label': 'Scan QRCode',
       'dl.qr.title': 'Open the download',
       'dl.qr.sub': 'Point your phone here to get a direct link to the APK.',
 
@@ -1330,6 +1728,12 @@
       'notif.now': 'ora',
       'notif.title': 'Foto richiesta',
       'notif.body': '@papa_rossi ha richiesto una foto. Scatto tra…',
+
+      'tg.loc.title': 'Posizione di Marco',
+      'tg.loc.accuracy': 'Precisione:',
+      'tg.loc.battery': 'Batteria:',
+      'tg.audio.from': 'Da Marco',
+      'tg.message': 'Messaggio',
 
       'how.eyebrow': 'Una domanda. Una risposta. Niente in mezzo.',
       'how.title': 'Tu chiedi da Telegram.<br/>Il telefono <em>risponde</em>.',
@@ -1432,14 +1836,14 @@
 
       'dl.eyebrow': 'Scarica',
       'dl.title': 'Inquadra. Installa.<br/><em>Inizia.</em>',
-      'dl.lede': "Family Tracker è distribuito come APK firmato. Si installa una volta sul telefono di chi sarà assistito — l'onboarding ti guida nei tre minuti successivi: creazione del bot Telegram, primo familiare, primo comando di prova.",
+      'dl.lede': "Family Tracker è distribuito come APK. Si installa una volta sul telefono di chi sarà assistito — l'onboarding ti guida nei tre minuti successivi: creazione del bot Telegram, primo familiare, primo comando di prova.",
       'dl.meta.android': 'Android 8.0+',
-      'dl.meta.signed': 'APK firmato',
+      'dl.meta.signed': 'APK',
       'dl.meta.setup': 'Setup in 3 min',
       'dl.cta': 'Scarica APK',
-      'dl.qr.label': 'Scansiona da Telegram',
+      'dl.qr.label': 'Scansiona QRCode',
       'dl.qr.title': 'Apri il download',
-      'dl.qr.sub': 'Inquadra dal tuo telefono per ricevere il link diretto al file APK. Versione 0.1.0.',
+      'dl.qr.sub': 'Inquadra dal tuo telefono per ricevere il link diretto al file APK.',
 
       'thanks.eyebrow': 'Un piccolo pensiero',
       'thanks.title': "Se ti è stata d'aiuto,<br/>basta <em>dirlo</em>.",
