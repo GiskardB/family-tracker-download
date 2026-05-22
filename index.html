@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Family Tracker — The people you love, close. Always.</title>
+<title>Family Tracker — Always close to the people you love.</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta name="description" content="Family Tracker: a quiet Android app that lets your family check on you through a private Telegram bot. No backend, no constant tracking, no subscription." />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -567,9 +567,269 @@
 
   /* Gallery */
   .gallery { overflow: hidden; }
-  .gallery-scroll { display: flex; gap: 32px; overflow-x: auto; padding: 30px 28px 40px; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  /* Android home-screen widget mockup (phone shows the OS wallpaper, dock,
+     and the Family Tracker 4×2 widget pinned to the top of the grid).
+     Used in the gallery to demonstrate the always-visible Sto bene / Aiuto
+     buttons that live OUTSIDE the app, directly on the home screen. */
+  .android-home {
+    flex: 1; min-height: 0; padding: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 50% 10%, rgba(236,181,141,0.55), transparent 65%),
+      radial-gradient(ellipse 70% 55% at 50% 95%, rgba(74,46,30,0.55), transparent 60%),
+      linear-gradient(170deg, #C56A3F 0%, #8E4824 40%, #4A2E1E 100%);
+    display: flex; flex-direction: column;
+    position: relative;
+  }
+  .android-home .ah-pad { padding: 10px 12px 0; display: flex; flex-direction: column; gap: 12px; flex: 1; min-height: 0; }
+  .android-widget {
+    background: rgba(255, 250, 241, 0.96);
+    border-radius: 22px;
+    padding: 12px 14px 14px;
+    box-shadow: 0 10px 24px rgba(0,0,0,0.22), inset 0 0 0 1px rgba(255,255,255,0.4);
+    backdrop-filter: blur(8px);
+  }
+  /* Real widget centers a small Nodo logo at the top, no wordmark. */
+  .android-widget-head {
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 10px;
+  }
+  .android-widget-buttons { display: flex; gap: 10px; }
+  /* Match the production widget: brighter pill buttons (border-radius 999px),
+     white sans-serif label, no icon inside the button — just the colour
+     codes the meaning. */
+  .android-widget-buttons button {
+    flex: 1; min-height: 50px;
+    border: none; border-radius: 999px;
+    color: #fff; font-weight: 800; font-size: 17px;
+    letter-spacing: 0.2px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: default;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.18);
+    font-family: var(--sans);
+  }
+  .android-widget-buttons .aw-fine { background: #2E8B57; }
+  .android-widget-buttons .aw-help { background: #C8443A; }
+  .android-apps {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px 8px;
+    padding: 4px 4px 0;
+  }
+  .android-apps .aa {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    font-size: 9px; color: #fff; text-shadow: 0 1px 2px rgba(0,0,0,0.45);
+    font-weight: 500; letter-spacing: 0.2px;
+  }
+  /* Centred-by-default for every .aa-ico (app grid AND dock). The earlier
+     pattern that scoped centering only to .android-apps .aa-ico left the
+     dock icons unaligned — SVGs floated to the top-left of each tile. */
+  .aa-ico {
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700;
+  }
+  .android-apps .aa-ico {
+    width: 34px; height: 34px; border-radius: 9px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.25);
+  }
+  .android-dock {
+    margin-top: auto;
+    background: rgba(0,0,0,0.18); backdrop-filter: blur(8px);
+    display: flex; justify-content: space-around; align-items: center;
+    padding: 10px 14px 14px;
+    border-radius: 24px 24px 0 0;
+  }
+  .android-dock .aa-ico {
+    width: 38px; height: 38px; border-radius: 10px;
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+  }
+  .android-status-light {
+    color: #FFFAF1; text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+  }
+  /* Zona monitorata in-app screen (mirrors the real Settings >
+     Comportamento > Zona monitorata screen: peachy-cream background,
+     a map preview, then POSIZIONE / RAGGIO / FASCIA ORARIA / STATO
+     section labels above paper cards). Decorative — not interactive. */
+  .zone-form {
+    flex: 1; min-height: 0; padding: 8px 12px 0; overflow: hidden;
+    background: #FBF3E7; display: flex; flex-direction: column; gap: 8px;
+  }
+  .zone-form .zf-header {
+    display: flex; align-items: center; gap: 10px; padding: 2px 0 6px;
+  }
+  .zone-form .zf-back {
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    color: var(--ink); flex: 0 0 auto;
+  }
+  .zone-form .zf-title {
+    flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); text-align: center;
+    letter-spacing: -0.1px;
+  }
+  .zone-form .zf-header-pad { width: 22px; }
+  .zone-form .zf-intro {
+    font-size: 10.5px; color: var(--ink-soft); line-height: 1.45; margin: -2px 0 4px;
+  }
+  /* Map preview — a stylised inline-SVG street grid using the warm site
+     palette. Self-contained, no network dependency. Sits behind a translucent
+     terracotta radius circle + centred house pin. flex-shrink:0 prevents the
+     parent flex column from collapsing it when the form is tall. */
+  .zone-form .zf-map {
+    height: 96px; flex-shrink: 0;
+    border-radius: 10px; overflow: hidden; position: relative;
+    border: 1px solid #E8D9C2;
+    background: #F4E7D2;
+  }
+  .zone-form .zf-map .zf-map-svg {
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    display: block;
+  }
+  .zone-form .zf-map::after {
+    content: ''; position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(197,106,63,0.18);
+    box-shadow: 0 0 0 1.5px rgba(197,106,63,0.7);
+    pointer-events: none;
+  }
+  .zone-form .zf-map .zf-pin {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -100%);
+    filter: drop-shadow(0 2px 3px rgba(74,46,30,0.45));
+    z-index: 1;
+  }
+  .zone-form .zf-map .zf-map-attr {
+    position: absolute; right: 4px; bottom: 2px;
+    font-size: 7.5px; color: rgba(0,0,0,0.55);
+    background: rgba(255,255,255,0.6); padding: 0 3px; border-radius: 2px;
+    letter-spacing: 0.2px;
+  }
+  .zone-form .zf-section {
+    font-size: 9px; font-weight: 700; letter-spacing: 1.2px;
+    text-transform: uppercase; color: var(--ink-mute);
+    margin: 4px 0 -2px; padding-left: 4px;
+  }
+  .zone-form .zf-card {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .zone-form .zf-pos { display: flex; align-items: center; gap: 9px; }
+  .zone-form .zf-pos-ico {
+    width: 28px; height: 28px; border-radius: 14px; background: var(--navy-tint);
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+  }
+  .zone-form .zf-pos-body { flex: 1; min-width: 0; }
+  .zone-form .zf-pos-name { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .zone-form .zf-pos-coords { font-family: var(--mono); font-size: 9.5px; color: var(--ink-mute); margin-top: 1px; }
+  .zone-form .zf-gps {
+    margin-top: 8px;
+    background: var(--navy-tint); color: var(--navy);
+    border-radius: 8px; padding: 7px 10px;
+    font-size: 10.5px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .zone-form .zf-radius { display: flex; align-items: center; gap: 10px; }
+  .zone-form .zf-radius .zf-step {
+    width: 30px; height: 30px; border-radius: 15px;
+    background: var(--bg-alt); color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 700; flex: 0 0 auto;
+  }
+  .zone-form .zf-radius .zf-amount { flex: 1; text-align: center; }
+  .zone-form .zf-radius .zf-amount b { font-size: 22px; color: var(--ink); font-weight: 700; letter-spacing: -0.4px; }
+  .zone-form .zf-radius .zf-amount span { font-size: 10.5px; color: var(--ink-mute); margin-left: 3px; }
+  .zone-form .zf-radius .zf-sublabel { font-size: 9.5px; color: var(--ink-mute); margin-top: -1px; }
+  .zone-form .zf-slider {
+    margin-top: 8px; display: flex; align-items: center; justify-content: space-between;
+    font-size: 9px; color: var(--ink-mute); font-variant-numeric: tabular-nums;
+  }
+  .zone-form .zf-slider .zf-track {
+    flex: 1; height: 3px; margin: 0 6px;
+    background: var(--line); border-radius: 999px; position: relative;
+  }
+  .zone-form .zf-slider .zf-thumb {
+    position: absolute; left: 6%; top: 50%;
+    width: 8px; height: 8px; background: var(--warm); border-radius: 50%;
+    transform: translate(-50%, -50%);
+  }
+  .zone-form .zf-when { display: flex; align-items: flex-start; gap: 9px; }
+  .zone-form .zf-when-ico {
+    width: 28px; height: 28px; border-radius: 14px; background: var(--warm-tint);
+    display: flex; align-items: center; justify-content: center; flex: 0 0 auto;
+    color: var(--warm);
+  }
+  .zone-form .zf-when-title { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .zone-form .zf-when-sub { font-size: 9.5px; color: var(--ink-mute); margin-top: 1px; line-height: 1.4; }
+  .zone-form .zf-time { display: flex; gap: 8px; margin-top: 8px; }
+  .zone-form .zf-time-cell { flex: 1; }
+  .zone-form .zf-time-label { font-size: 9px; color: var(--ink-mute); margin-bottom: 3px; }
+  .zone-form .zf-time-input {
+    background: var(--bg); border: 1px solid var(--line); border-radius: 6px;
+    padding: 5px 8px; font-size: 11px; color: var(--ink);
+    text-align: center; font-variant-numeric: tabular-nums;
+  }
+  .zone-form .zf-toggle {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .zone-form .zf-toggle .zf-toggle-title { font-size: 12px; font-weight: 600; color: var(--ink); }
+  .zone-form .zf-toggle .zf-toggle-sub { font-size: 9.5px; color: var(--ink-mute); margin-top: 1px; line-height: 1.4; }
+  .zone-form .zf-switch {
+    width: 32px; height: 18px; background: var(--navy); border-radius: 999px;
+    position: relative; flex: 0 0 auto;
+  }
+  .zone-form .zf-switch::after {
+    content: ''; position: absolute; top: 2px; right: 2px;
+    width: 14px; height: 14px; border-radius: 50%; background: #fff;
+  }
+  .zone-form .zf-active-row {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 9.5px; color: var(--ok); font-weight: 500; margin-top: 6px;
+  }
+  .zone-form .zf-active-row .zf-dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--ok);
+  }
+  .gallery-scroll { display: flex; gap: 32px; overflow-x: auto; padding: 30px 28px 40px; scroll-snap-type: x mandatory; scrollbar-width: none; scroll-behavior: smooth; }
   .gallery-scroll::-webkit-scrollbar { display: none; }
   .gallery-item { flex: 0 0 auto; scroll-snap-align: center; display: flex; flex-direction: column; align-items: center; gap: 16px; }
+  /* Carousel chrome — fade hints on the edges, arrow buttons, and pagination
+     dots. The scroll itself was always there (overflow-x: auto + scroll-snap),
+     but visitors didn't realise; this makes the affordance explicit. */
+  .gallery-stage { position: relative; }
+  .gallery-stage::before,
+  .gallery-stage::after {
+    content: ''; position: absolute; top: 0; bottom: 0; width: 60px;
+    pointer-events: none; z-index: 2;
+  }
+  .gallery-stage::before { left: 0;  background: linear-gradient(to right, var(--bg) 0%, transparent 100%); }
+  .gallery-stage::after  { right: 0; background: linear-gradient(to left,  var(--bg) 0%, transparent 100%); }
+  .gallery-nav {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink); cursor: pointer;
+    box-shadow: 0 8px 22px rgba(74,46,30,0.12);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 3; transition: background 0.2s, border-color 0.2s, transform 0.15s, opacity 0.2s;
+  }
+  .gallery-nav:hover { background: var(--warm); color: #fff; border-color: var(--warm); }
+  .gallery-nav:active { transform: translateY(-50%) scale(0.94); }
+  .gallery-nav:disabled { opacity: 0.35; cursor: default; }
+  .gallery-nav.prev { left: 16px; }
+  .gallery-nav.next { right: 16px; }
+  @media (max-width: 760px) {
+    .gallery-nav { width: 40px; height: 40px; }
+    .gallery-nav.prev { left: 8px; } .gallery-nav.next { right: 8px; }
+    .gallery-stage::before, .gallery-stage::after { width: 28px; }
+  }
+  .gallery-dots {
+    display: flex; justify-content: center; align-items: center; gap: 8px;
+    margin: -10px 0 28px;
+  }
+  .gallery-dots button {
+    width: 8px; height: 8px; border-radius: 50%; padding: 0;
+    background: var(--line); border: none; cursor: pointer;
+    transition: background 0.2s, transform 0.2s, width 0.25s;
+  }
+  .gallery-dots button:hover { background: var(--warm-soft); }
+  .gallery-dots button.active {
+    background: var(--warm); width: 22px; border-radius: 4px;
+  }
   .gallery-item .caption { font-size: 14px; color: var(--ink-mute); font-weight: 500; text-align: center; max-width: 260px; }
   .gallery-item .caption strong { display: block; color: var(--ink); font-size: 16px; font-weight: 700; margin-bottom: 3px; }
 
@@ -704,7 +964,7 @@
     <div class="hero-grid">
       <div>
         <div class="eyebrow" data-i18n="hero.eyebrow">A quieter way to look out for them</div>
-        <h1 class="display hero-title" data-i18n="hero.title">The people you love,<br/><em>close</em>. Always.</h1>
+        <h1 class="display hero-title" data-i18n="hero.title">Always <em>close</em><br/>to the people you love.</h1>
         <p class="hero-lede" data-i18n="hero.lede">
           When you need to know they're alright, one message is enough. The rest of the time, the app stays quiet — just there, like a porch light left on for them.
         </p>
@@ -1111,6 +1371,11 @@
         <p class="cmd-desc" data-i18n="cmd.all.desc">Location + photo + audio in sequence. For when you need to know everything at once.</p>
       </div>
       <div class="cmd-card reveal">
+        <div class="cmd-name">/casa</div>
+        <h3 class="cmd-title" data-i18n="cmd.zone.title">Monitored zone</h3>
+        <p class="cmd-desc" data-i18n="cmd.zone.desc">Open a Telegram WebApp form to set the zone center, radius, and time window. The app alerts every family member if the device leaves the zone during that window.</p>
+      </div>
+      <div class="cmd-card reveal">
         <div class="cmd-name">/trovami<span style="color: rgba(255,255,255,0.4);"> · <span data-i18n="cmd.optional">optional</span></span></div>
         <h3 class="cmd-title" data-i18n="cmd.ring.title">Ring</h3>
         <p class="cmd-desc" data-i18n="cmd.ring.desc">Rings the phone at max volume, even if silenced. For locating it at home.</p>
@@ -1127,7 +1392,14 @@
       <h2 data-i18n="gal.title">One screen.<br/>Five <em>certainties</em>.</h2>
     </div>
   </div>
-  <div class="gallery-scroll">
+  <div class="gallery-stage">
+    <button type="button" class="gallery-nav prev" aria-label="Previous">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+    </button>
+    <button type="button" class="gallery-nav next" aria-label="Next">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+    </button>
+    <div class="gallery-scroll">
     <div class="gallery-item reveal">
       <div class="phone">
         <div class="status"><span>14:32</span><span>78%</span></div>
@@ -1154,6 +1426,24 @@
               <div class="stat"><div class="ico">📍</div><div class="v">3</div><div class="l" data-i18n="phone.stat.locations">locations</div></div>
               <div class="stat"><div class="ico">📷</div><div class="v">1</div><div class="l" data-i18n="phone.stat.photos">photos</div></div>
               <div class="stat"><div class="ico">🎙</div><div class="v">0</div><div class="l" data-i18n="phone.stat.audios">audio</div></div>
+            </div>
+          </div>
+          <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 8px 0 4px; padding-left: 2px;" data-i18n="phone.recentTitle">Storico recenti</div>
+          <div class="card" style="padding: 0;">
+            <div class="recent-row" style="padding: 9px 12px;">
+              <div class="recent-time"><div class="t">14:32</div><div class="a" data-i18n="phone.now">ora</div></div>
+              <div class="recent-body"><div class="l" data-i18n="phone.recent.location">Posizione</div><div class="w" data-i18n="phone.recent.by1">da @mamma_rossi</div></div>
+              <div class="recent-tone"></div>
+            </div>
+            <div class="recent-row" style="padding: 9px 12px;">
+              <div class="recent-time"><div class="t">13:48</div><div class="a" data-i18n="phone.recent.age2">47 min fa</div></div>
+              <div class="recent-body"><div class="l" data-i18n="phone.recent.status">Stato</div><div class="w" data-i18n="phone.recent.by1">da @mamma_rossi</div></div>
+              <div class="recent-tone"></div>
+            </div>
+            <div class="recent-row" style="padding: 9px 12px;">
+              <div class="recent-time"><div class="t">12:15</div><div class="a" data-i18n="phone.hoursAgo">2 h fa</div></div>
+              <div class="recent-body"><div class="l" data-i18n="phone.recent.photo">Foto</div><div class="w" data-i18n="phone.recent.by2">da @papa_rossi</div></div>
+              <div class="recent-tone"></div>
             </div>
           </div>
         </div>
@@ -1200,10 +1490,164 @@
               <span class="pill ok"><span class="dot"></span><span data-i18n="phone.active">Active</span></span>
             </div>
           </div>
+          <div style="font-size: 9.5px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 8px 0 4px; padding-left: 2px;" data-i18n="phone.recentTitle">Storico recenti</div>
+          <div class="card" style="padding: 0;">
+            <div class="recent-row" style="padding: 9px 12px;">
+              <div class="recent-time"><div class="t">14:32</div><div class="a" data-i18n="phone.now">ora</div></div>
+              <div class="recent-body"><div class="l" data-i18n="phone.recent.location">Posizione</div><div class="w" data-i18n="phone.recent.by1">da @mamma_rossi</div></div>
+              <div class="recent-tone"></div>
+            </div>
+            <div class="recent-row" style="padding: 9px 12px;">
+              <div class="recent-time"><div class="t">13:48</div><div class="a" data-i18n="phone.recent.age2">47 min fa</div></div>
+              <div class="recent-body"><div class="l" data-i18n="phone.recent.status">Stato</div><div class="w" data-i18n="phone.recent.by1">da @mamma_rossi</div></div>
+              <div class="recent-tone"></div>
+            </div>
+          </div>
         </div>
         <div class="gesture"></div>
       </div>
       <div class="caption"><strong data-i18n="gal.2.title">Join requests</strong><span data-i18n="gal.2.desc">Approve every new family member before they can send commands</span></div>
+    </div>
+
+    <!-- Gallery item: Zona monitorata configuration screen.
+         Mirrors Settings > Comportamento > Zona monitorata in the
+         shipping app: map preview at the top, POSIZIONE / RAGGIO /
+         FASCIA ORARIA / STATO sections below. -->
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status"><span>14:32</span><span>78%</span></div>
+        <div class="zone-form">
+          <div class="zf-header">
+            <div class="zf-back">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            </div>
+            <div class="zf-title" data-i18n="gal.zone.title">Zona monitorata</div>
+            <div class="zf-header-pad"></div>
+          </div>
+          <div class="zf-intro" data-i18n="gal.zone.intro">Avvisa la famiglia se Marco esce dalla zona monitorata nella fascia oraria. Gestito da Android GeofencingClient.</div>
+          <div class="zf-map">
+            <!-- Stylised inline-SVG street grid. Network-free, blends with
+                 the warm palette of the rest of the site. -->
+            <svg class="zf-map-svg" viewBox="0 0 280 96" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+              <!-- Base "land" gradient -->
+              <defs>
+                <linearGradient id="zf-land" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#F7EAD4"/>
+                  <stop offset="100%" stop-color="#ECDABB"/>
+                </linearGradient>
+              </defs>
+              <rect x="0" y="0" width="280" height="96" fill="url(#zf-land)"/>
+              <!-- Building blocks (slightly warmer rectangles) -->
+              <g fill="#E4D2B0" opacity="0.7">
+                <rect x="6" y="6" width="50" height="24"/>
+                <rect x="6" y="36" width="60" height="18"/>
+                <rect x="6" y="62" width="42" height="28"/>
+                <rect x="80" y="6" width="66" height="26"/>
+                <rect x="80" y="38" width="50" height="22"/>
+                <rect x="80" y="66" width="66" height="24"/>
+                <rect x="160" y="6" width="48" height="20"/>
+                <rect x="160" y="32" width="58" height="28"/>
+                <rect x="160" y="66" width="54" height="24"/>
+                <rect x="232" y="6" width="42" height="24"/>
+                <rect x="232" y="34" width="42" height="26"/>
+                <rect x="232" y="64" width="42" height="26"/>
+              </g>
+              <!-- Park / green space -->
+              <rect x="148" y="62" width="10" height="30" fill="#B8C996" opacity="0.55"/>
+              <!-- Streets (white) -->
+              <g stroke="#FFFAF1" stroke-linecap="butt">
+                <line x1="0"  y1="33" x2="280" y2="33" stroke-width="3"/>
+                <line x1="0"  y1="61" x2="280" y2="61" stroke-width="3"/>
+                <line x1="71"  y1="0"  x2="71"  y2="96" stroke-width="2.5"/>
+                <line x1="153" y1="0"  x2="153" y2="96" stroke-width="2.5"/>
+                <line x1="223" y1="0"  x2="223" y2="96" stroke-width="2.5"/>
+                <!-- Diagonal main road for visual variety -->
+                <line x1="-10" y1="110" x2="310" y2="-14" stroke-width="4.5" stroke="#FFFAF1"/>
+              </g>
+              <!-- Subtle street outlines for depth -->
+              <g stroke="#D9C5A2" stroke-width="0.5" opacity="0.5" fill="none">
+                <line x1="0"  y1="31" x2="280" y2="31"/>
+                <line x1="0"  y1="35" x2="280" y2="35"/>
+                <line x1="0"  y1="59" x2="280" y2="59"/>
+                <line x1="0"  y1="63" x2="280" y2="63"/>
+              </g>
+            </svg>
+            <div class="zf-pin">
+              <svg width="22" height="28" viewBox="0 0 24 30" fill="none">
+                <path d="M12 0a10 10 0 0 1 10 10c0 7-10 20-10 20S2 17 2 10A10 10 0 0 1 12 0z" fill="#4A2E1E"/>
+                <path d="M8 11l4-3 4 3v5h-3v-3h-2v3H8z" fill="#FFFAF1"/>
+              </svg>
+            </div>
+          </div>
+          <div class="zf-section" data-i18n="gal.zone.posLabel">POSIZIONE</div>
+          <div class="zf-card">
+            <div class="zf-pos">
+              <div class="zf-pos-ico">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12l9-9 9 9"/><path d="M5 10v10h14V10"/></svg>
+              </div>
+              <div class="zf-pos-body">
+                <div class="zf-pos-name" data-i18n="gal.zone.title">Zona monitorata</div>
+                <div class="zf-pos-coords">45.07&nbsp;· 7.64</div>
+              </div>
+            </div>
+            <div class="zf-gps">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/></svg>
+              <span data-i18n="gal.zone.gps">Aggiorna con GPS</span>
+            </div>
+          </div>
+          <div class="zf-section" data-i18n="gal.zone.radiusLabel">RAGGIO</div>
+          <div class="zf-card">
+            <div class="zf-radius">
+              <div class="zf-step">−</div>
+              <div class="zf-amount">
+                <div><b>100</b><span>m</span></div>
+                <div class="zf-sublabel" data-i18n="gal.zone.radiusSub">Raggio della zona</div>
+              </div>
+              <div class="zf-step">+</div>
+            </div>
+            <div class="zf-slider">
+              <span>50&nbsp;m</span>
+              <div class="zf-track"><div class="zf-thumb"></div></div>
+              <span>2&nbsp;km</span>
+            </div>
+          </div>
+          <div class="zf-section" data-i18n="gal.zone.windowLabel">FASCIA ORARIA</div>
+          <div class="zf-card">
+            <div class="zf-when">
+              <div class="zf-when-ico">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              </div>
+              <div style="flex: 1; min-width: 0;">
+                <div class="zf-when-title" data-i18n="gal.zone.when">Quando avvisare</div>
+                <div class="zf-when-sub" data-i18n="gal.zone.whenSub">Alert solo se esce in questa fascia</div>
+              </div>
+            </div>
+            <div class="zf-time">
+              <div class="zf-time-cell">
+                <div class="zf-time-label" data-i18n="gal.zone.from">Inizio</div>
+                <div class="zf-time-input">22:00</div>
+              </div>
+              <div class="zf-time-cell">
+                <div class="zf-time-label" data-i18n="gal.zone.to">Fine</div>
+                <div class="zf-time-input">06:00</div>
+              </div>
+            </div>
+          </div>
+          <div class="zf-section" data-i18n="gal.zone.statusLabel">STATO</div>
+          <div class="zf-card">
+            <div class="zf-toggle">
+              <div style="flex: 1;">
+                <div class="zf-toggle-title" data-i18n="gal.zone.active">Geofence attivo</div>
+                <div class="zf-toggle-sub" data-i18n="gal.zone.activeSub">Richiede permesso «posizione sempre»</div>
+              </div>
+              <div class="zf-switch"></div>
+            </div>
+            <div class="zf-active-row"><span class="zf-dot"></span><span data-i18n="phone.active">Attivo</span></div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.zone.cap.title">Monitored zone</strong><span data-i18n="gal.zone.cap.desc">Set the zone center, radius and active time window from a Telegram WebApp</span></div>
     </div>
 
     <div class="gallery-item reveal">
@@ -1310,44 +1754,103 @@
       <div class="phone">
         <div class="status"><span>14:32</span><span>78%</span></div>
         <div class="phone-screen">
-          <div style="display: flex; align-items: center; gap: 10px; padding: 12px 4px;">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--ink);"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
-            <div style="font-size: 15px; font-weight: 600; color: var(--ink);" data-i18n="gal.5.barTitle">Settings</div>
+          <div style="display: flex; align-items: center; gap: 10px; padding: 10px 4px 6px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--ink);"><polyline points="15 18 9 12 15 6"></polyline></svg>
+            <div style="flex: 1; font-size: 14px; font-weight: 700; color: var(--ink); text-align: center; letter-spacing: -0.1px;" data-i18n="gal.5.barTitle">Impostazioni</div>
+            <div style="width: 16px;"></div>
           </div>
-          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 6px 0;" data-i18n="gal.5.sectionBot">BOT</div>
+          <!-- APP section -->
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 6px 0 4px; padding-left: 2px;" data-i18n="gal.5.sectionApp">APP</div>
           <div class="card" style="padding: 0;">
-            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-bottom: 1px solid var(--line-soft);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
               <div style="flex: 1;">
-                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.bot.title">Dedicated bot</div>
-                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.bot.desc">Token, deep link, QR</div>
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.sec.title">Sicurezza</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.sec.desc">Pattern di sblocco e recovery</div>
               </div>
               <span style="color: var(--ink-mute); font-size: 14px;">›</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h7"/><path d="M9 3v2c0 4.418-3.582 8-8 8"/><path d="M4 9c0 4.418 4.582 8 9 8"/><path d="M22 22l-5-10-5 10"/><path d="M14 18h6"/></svg>
               <div style="flex: 1;">
-                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.acc.title">Authorized accounts</div>
-                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.acc.desc">2 family members</div>
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.lang.title">Lingua / Language</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.lang.desc">Italiano · English</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.acc.title">Account autorizzati</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.acc.desc">2 familiari</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#B83C2E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: #B83C2E;" data-i18n="gal.5.danger.title">Zona pericolo</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.danger.desc">Rigenera token, elimina</div>
               </div>
               <span style="color: var(--ink-mute); font-size: 14px;">›</span>
             </div>
           </div>
-          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 14px 0 6px;" data-i18n="gal.5.sectionBeh">BEHAVIOR</div>
+          <!-- HOME section -->
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 10px 0 4px; padding-left: 2px;" data-i18n="gal.5.sectionHome">HOME</div>
           <div class="card" style="padding: 0;">
-            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-bottom: 1px solid var(--line-soft);">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M18 8a6 6 0 00-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a7 7 0 0 0-7 7c0 2.5 1 3.5 2 5h10c1-1.5 2-2.5 2-5a7 7 0 0 0-7-7z"/><line x1="9" y1="21" x2="15" y2="21"/><line x1="10" y1="18" x2="14" y2="18"/></svg>
               <div style="flex: 1;">
-                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.cap.title">Capabilities</div>
-                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.cap.desc">Photo, audio, ringer</div>
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.quick.title">Bottoni rapidi</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.quick.desc">Mostra «Sto bene» e «Aiuto» in cima alla home</div>
+              </div>
+              <div style="width: 28px; height: 16px; background: var(--navy); border-radius: 999px; position: relative; flex: 0 0 auto;"><span style="position: absolute; top: 2px; right: 2px; width: 12px; height: 12px; border-radius: 50%; background: #fff; display: block;"></span></div>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.widget.title">Widget Bottoni Rapidi attivo</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.widget.desc">Per rimuoverlo, tienilo premuto sulla home</div>
               </div>
               <span style="color: var(--ink-mute); font-size: 14px;">›</span>
             </div>
-            <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          </div>
+          <!-- COMPORTAMENTO section -->
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 10px 0 4px; padding-left: 2px;" data-i18n="gal.5.sectionBeh">COMPORTAMENTO</div>
+          <div class="card" style="padding: 0;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
               <div style="flex: 1;">
-                <div style="font-size: 12.5px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.qh.title">Quiet hours</div>
-                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.qh.desc">When to block photo/audio</div>
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.cap.title">Capability</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.cap.desc">Foto, audio, ringer</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid var(--line-soft);">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.qh.title">Quiet hours</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.qh.desc">Quando bloccare foto/audio</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/><circle cx="12" cy="12" r="3"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.zone.title">Zona monitorata</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.zone.desc">Avvisi nella fascia oraria e comando /casa</div>
+              </div>
+              <span style="color: var(--ink-mute); font-size: 14px;">›</span>
+            </div>
+          </div>
+          <!-- TRASPARENZA section (truncated to hint at more) -->
+          <div style="font-size: 9px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: var(--ink-mute); margin: 10px 0 4px; padding-left: 2px;" data-i18n="gal.5.sectionTrans">TRASPARENZA</div>
+          <div class="card" style="padding: 0;">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#4A2E1E" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              <div style="flex: 1;">
+                <div style="font-size: 12px; font-weight: 500; color: var(--ink);" data-i18n="gal.5.audit.title">Storico</div>
+                <div style="font-size: 10px; color: var(--ink-mute); margin-top: 1px;" data-i18n="gal.5.audit.desc">Tutti gli eventi</div>
               </div>
               <span style="color: var(--ink-mute); font-size: 14px;">›</span>
             </div>
@@ -1355,9 +1858,93 @@
         </div>
         <div class="gesture"></div>
       </div>
-      <div class="caption"><strong data-i18n="gal.5.title">Settings</strong><span data-i18n="gal.5.desc">Bot, authorized accounts, quiet hours, advanced commands, diagnostics</span></div>
+      <div class="caption"><strong data-i18n="gal.5.title">Impostazioni</strong><span data-i18n="gal.5.desc">Sicurezza, lingua, bot, comportamento e diagnostica — tutto in un posto solo</span></div>
+    </div>
+
+    <!-- Gallery item: Android home-screen widget.
+         Shows the Family Tracker 4×2 widget pinned to a fake Android
+         home-screen, with two big tappable buttons (Sto bene / Aiuto).
+         The widget never opens the app — it routes directly into the
+         foreground service, which is the headline benefit. -->
+    <div class="gallery-item reveal">
+      <div class="phone">
+        <div class="status android-status-light"><span>14:32</span><span style="display: flex; align-items: center; gap: 5px;">
+          <svg width="13" height="9" viewBox="0 0 13 9" fill="currentColor"><rect x="0" y="6" width="2" height="3"/><rect x="3" y="4" width="2" height="5"/><rect x="6" y="2" width="2" height="7"/><rect x="9" y="0" width="2" height="9"/></svg>
+          <span style="font-size: 10px;">4G</span>
+          78%
+          <div style="display: inline-block; width: 18px; height: 9px; border: 1.3px solid currentColor; border-radius: 2px; padding: 1px;"><div style="height: 100%; width: 78%; background: currentColor;"></div></div>
+        </span></div>
+        <div class="android-home">
+          <div class="ah-pad">
+            <div class="android-widget">
+              <div class="android-widget-head">
+                <svg width="22" height="22" viewBox="0 0 40 40" fill="none">
+                  <circle cx="15" cy="20" r="9" stroke="#4A2E1E" stroke-width="3"/>
+                  <circle cx="25" cy="20" r="9" stroke="#C56A3F" stroke-width="3"/>
+                  <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="#4A2E1E" stroke-width="3" fill="none"/>
+                </svg>
+              </div>
+              <div class="android-widget-buttons">
+                <button type="button" class="aw-fine">
+                  <span data-i18n="gal.widget.fine">Sto bene</span>
+                </button>
+                <button type="button" class="aw-help">
+                  <span data-i18n="gal.widget.help">Aiuto</span>
+                </button>
+              </div>
+            </div>
+            <div class="android-apps">
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #34a853, #1a8d3d);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+              </div><span>Phone</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #ea4335, #c23321);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+              </div><span>Mail</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #4285f4, #1a73e8);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+              </div><span>Browser</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #FBE9C7, #E8C28A); color: #4A2E1E;">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              </div><span>Weather</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #0088cc, #0066a0);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+              </div><span>Telegram</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #FBF3E7, #ECB58D); color: #4A2E1E;">
+                <svg width="18" height="18" viewBox="0 0 40 40" fill="none">
+                  <circle cx="15" cy="20" r="9" stroke="currentColor" stroke-width="3"/>
+                  <circle cx="25" cy="20" r="9" stroke="currentColor" stroke-width="3"/>
+                  <path d="M 21.2 26.8 A 9 9 0 0 1 18.3 29.1" stroke="currentColor" stroke-width="3" fill="none"/>
+                </svg>
+              </div><span>Family</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #d4a017, #a07b00);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </div><span>Calendar</span></div>
+              <div class="aa"><div class="aa-ico" style="background: linear-gradient(135deg, #5e548e, #3d3568);">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+              </div><span>Music</span></div>
+            </div>
+          </div>
+          <div class="android-dock">
+            <div class="aa-ico" style="background: linear-gradient(135deg, #34a853, #1a8d3d);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div class="aa-ico" style="background: linear-gradient(135deg, #25d366, #128c7e);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+            </div>
+            <div class="aa-ico" style="background: linear-gradient(135deg, #4285f4, #1a73e8);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="aa-ico" style="background: linear-gradient(135deg, #ea4335, #c23321);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="gesture"></div>
+      </div>
+      <div class="caption"><strong data-i18n="gal.widget.title">Home-screen widget</strong><span data-i18n="gal.widget.desc">“Sto bene” and “Aiuto” on the Android home screen — no app to open</span></div>
     </div>
   </div>
+  <div class="gallery-dots" aria-hidden="true"></div>
 </section>
 
 <!-- PRIVACY -->
@@ -1512,9 +2099,13 @@
         </p>
       </div>
       <div class="legal-note">
-        <strong data-i18n="legal.title">A note on responsibility</strong>
+        <strong data-i18n="legal.title">Liability · privacy · lawful use</strong>
         <p style="margin: 8px 0 0;" data-i18n="legal.body">
-          Family Tracker is a free, non-commercial app I built for my own family and then chose to share. It is provided "as is", without warranty of any kind, and I cannot accept liability for how it is used. Please use it only where there is documented consent — for minors under your parental responsibility, or for elderly relatives with their knowledge and agreement. It is not a tool for surveillance of anyone else.
+          <strong>No warranty.</strong> Family Tracker is a free, open-source, non-commercial project provided "AS IS", without warranty of any kind. The author and contributors are not liable for any damages, data loss, missed alerts, or consequences arising from use of the app.<br/><br/>
+          <strong>Lawful use only.</strong> You are solely responsible for installing and using the app in compliance with the laws of your jurisdiction — including GDPR, national privacy laws and rules on the recording of audio and images. Install it only on a device whose user has given informed, documented consent (yourself, a minor under your parental responsibility, or an adult relative who knows and agrees). Using it to monitor any other person without their knowledge or consent is unlawful in most jurisdictions and is explicitly outside the intended use of this software.<br/><br/>
+          <strong>No data collected by the author.</strong> Family Tracker has no server backend; the app communicates directly with the Telegram Bot API. The author has no access to your data, bot, media or location, and operates no service that retains user information. Telegram’s own privacy policy applies to all data routed through their platform.<br/><br/>
+          <strong>Trademarks.</strong> “Telegram” and “Android” are trademarks of their respective owners and are referenced here only for descriptive purposes. This project is not affiliated with, endorsed by, or sponsored by any of those entities.<br/><br/>
+          <strong>Distribution.</strong> Distributed via sideload from a public GitHub repository under the MIT licence. By downloading and installing the APK you accept these terms and the MIT licence in full.
         </p>
       </div>
     </div>
@@ -1537,7 +2128,7 @@
       'nav.download': 'Get the app',
 
       'hero.eyebrow': 'A quieter way to look out for them',
-      'hero.title': "The people you love,<br/><em>close</em>. Always.",
+      'hero.title': "Always <em>close</em><br/>to the people you love.",
       'hero.lede': "When you need to know they're alright, one message is enough. The rest of the time, the app stays quiet \u2014 just there, like a porch light left on for them.",
       'hero.ctaPrimary': 'Download for Android',
       'hero.ctaSecondary': 'See how it works',
@@ -1560,6 +2151,9 @@
       'phone.recent.location': 'Location',
       'phone.recent.photo': 'Photo',
       'phone.recent.by1': 'from @mamma_rossi',
+      'phone.recent.age2': '47 min ago',
+      'phone.recent.status': 'Status',
+      'phone.recentTitle': 'Recent history',
       'phone.recent.by2': 'from @papa_rossi',
 
       'notif.now': 'now',
@@ -1606,6 +2200,8 @@
       'cmd.ring.title': 'Ring',
       'cmd.ring.desc': 'Rings the phone at full volume \u2014 even on silent. For finding it around the house.',
       'cmd.optional': 'optional',
+      'cmd.zone.title': 'Monitored zone',
+      'cmd.zone.desc': 'Opens a Telegram WebApp form to set zone center, radius and time window. Alerts every family member if the device leaves the zone in that window.',
 
       'gal.eyebrow': 'From the inside',
       'gal.title': 'One screen.<br/>Five <em>certainties</em>.',
@@ -1635,7 +2231,52 @@
       'gal.4.fine': "I'M FINE",
       'gal.4.help': 'HELP',
       'gal.5.title': 'Settings',
-      'gal.5.desc': 'Bot, approved family, quiet hours, advanced commands, diagnostics.',
+      'gal.5.desc': 'Security, language, bot, behavior and diagnostics — all in one place.',
+      'gal.5.barTitle': 'Settings',
+      'gal.5.sectionApp': 'APP',
+      'gal.5.sectionHome': 'HOME',
+      'gal.5.sectionBeh': 'BEHAVIOR',
+      'gal.5.sectionTrans': 'TRANSPARENCY',
+      'gal.5.sec.title': 'Security',
+      'gal.5.sec.desc': 'Unlock pattern and recovery',
+      'gal.5.lang.title': 'Lingua / Language',
+      'gal.5.lang.desc': 'Italiano · English',
+      'gal.5.acc.title': 'Authorized accounts',
+      'gal.5.acc.desc': '2 family members',
+      'gal.5.danger.title': 'Danger zone',
+      'gal.5.danger.desc': 'Regenerate token, delete',
+      'gal.5.quick.title': 'Quick buttons',
+      'gal.5.quick.desc': 'Show “I’m fine” and “Help” at the top of the home',
+      'gal.5.widget.title': 'Quick Buttons widget active',
+      'gal.5.widget.desc': 'To remove it, long-press and drag off the home screen',
+      'gal.5.cap.title': 'Capability',
+      'gal.5.cap.desc': 'Photo, audio, ringer',
+      'gal.5.qh.title': 'Quiet hours',
+      'gal.5.qh.desc': 'When to block photo/audio',
+      'gal.5.zone.title': 'Monitored zone',
+      'gal.5.zone.desc': 'Alerts during the time window + /casa command',
+      'gal.5.audit.title': 'Audit log',
+      'gal.5.audit.desc': 'All recorded events',
+      'gal.widget.title': 'Home-screen widget',
+      'gal.widget.desc': '“I’m fine” and “Help” on the Android home screen — no app to open.',
+      'gal.widget.fine': "I'm fine",
+      'gal.widget.help': 'Help',
+      'gal.zone.title': 'Monitored zone',
+      'gal.zone.intro': 'Alerts the family if Marco leaves the monitored zone during the time window. Powered by Android GeofencingClient.',
+      'gal.zone.posLabel': 'LOCATION',
+      'gal.zone.radiusLabel': 'RADIUS',
+      'gal.zone.windowLabel': 'TIME WINDOW',
+      'gal.zone.statusLabel': 'STATUS',
+      'gal.zone.gps': 'Update with GPS',
+      'gal.zone.radiusSub': 'Zone radius',
+      'gal.zone.when': 'When to alert',
+      'gal.zone.whenSub': 'Only alert during this window',
+      'gal.zone.from': 'Start',
+      'gal.zone.to': 'End',
+      'gal.zone.active': 'Geofence active',
+      'gal.zone.activeSub': 'Requires “always” location permission',
+      'gal.zone.cap.title': 'Monitored zone',
+      'gal.zone.cap.desc': 'Map preview, radius and active time window — in-app or via the Telegram /casa command.',
       'gal.5.barTitle': 'Settings',
       'gal.5.sectionBot': 'BOT',
       'gal.5.sectionBeh': 'BEHAVIOR',
@@ -1690,8 +2331,8 @@
       'footer.madeWith': 'made with care',
       'footer.platform': 'Android only \u00b7 sideload',
 
-      'legal.title': 'A note on responsibility',
-      'legal.body': 'Family Tracker is a free, non-commercial app I built for my own family and decided to share. It comes as-is, with no warranty of any kind, and I cannot accept liability for how it is used. Please install it only where there is documented consent \u2014 for minors under your parental responsibility, or for elderly relatives who know and agree. It is not a tool for surveilling anyone else.',
+      'legal.title': 'Liability · privacy · lawful use',
+      'legal.body': '<strong>No warranty.</strong> Family Tracker is a free, open-source, non-commercial project. It is provided \"AS IS\", without warranty of any kind \u2014 express or implied \u2014 including merchantability, fitness for a particular purpose, or uninterrupted operation. The author and contributors are not liable for any damages, data loss, missed alerts, or consequences arising from use of the app.<br/><br/><strong>Lawful use only.</strong> You are solely responsible for installing and configuring the app in compliance with the laws of your jurisdiction \u2014 including the EU GDPR, national privacy and telecommunications laws, and rules on the recording of audio and images. The app must only be installed on a device whose user has given informed, documented consent (for example: yourself; a minor under your parental responsibility; an adult relative who knows and agrees). Using it to monitor any other person without their knowledge or consent is unlawful in most jurisdictions and is explicitly outside the intended use of this software.<br/><br/><strong>No data collected by the author.</strong> Family Tracker has no server backend. The app communicates directly with the Telegram Bot API; the author has no access to your data, your bot, your media, or your location, and operates no service that retains any user information. Telegram\'s own privacy policy applies to all data routed through their platform.<br/><br/><strong>Trademarks.</strong> \"Telegram\" and \"Android\" are trademarks of their respective owners and are referenced here only for descriptive purposes. This project is not affiliated with, endorsed by, or sponsored by any of those entities.<br/><br/><strong>Distribution.</strong> Distributed via sideload from a public GitHub repository under the MIT licence. By downloading and installing the APK you accept these terms and the MIT licence in full.',
     },
     it: {
       'nav.how': 'Come funziona',
@@ -1723,6 +2364,9 @@
       'phone.recent.location': 'Posizione',
       'phone.recent.photo': 'Foto',
       'phone.recent.by1': 'da @mamma_rossi',
+      'phone.recent.age2': '47 min fa',
+      'phone.recent.status': 'Stato',
+      'phone.recentTitle': 'Storico recenti',
       'phone.recent.by2': 'da @papa_rossi',
 
       'notif.now': 'ora',
@@ -1772,6 +2416,8 @@
       'cmd.ring.title': 'Suoneria',
       'cmd.ring.desc': 'Fa squillare il telefono al massimo volume, anche se in silenzioso. Per cercarlo in casa.',
       'cmd.optional': 'opzionale',
+      'cmd.zone.title': 'Zona monitorata',
+      'cmd.zone.desc': 'Apre un form Telegram WebApp per impostare centro, raggio e fascia oraria della zona. Avvisa tutti i familiari se il dispositivo esce dalla zona in quella fascia.',
 
       'gal.eyebrow': 'Sul telefono di chi la usa',
       'gal.title': 'Una sola schermata.<br/>Cinque <em>certezze</em>.',
@@ -1801,7 +2447,52 @@
       'gal.4.fine': 'STO BENE',
       'gal.4.help': 'AIUTO',
       'gal.5.title': 'Impostazioni',
-      'gal.5.desc': 'Bot, account autorizzati, quiet hours, comandi avanzati, diagnostica',
+      'gal.5.desc': 'Sicurezza, lingua, bot, comportamento e diagnostica — tutto in un posto solo.',
+      'gal.5.barTitle': 'Impostazioni',
+      'gal.5.sectionApp': 'APP',
+      'gal.5.sectionHome': 'HOME',
+      'gal.5.sectionBeh': 'COMPORTAMENTO',
+      'gal.5.sectionTrans': 'TRASPARENZA',
+      'gal.5.sec.title': 'Sicurezza',
+      'gal.5.sec.desc': 'Pattern di sblocco e recovery',
+      'gal.5.lang.title': 'Lingua / Language',
+      'gal.5.lang.desc': 'Italiano · English',
+      'gal.5.acc.title': 'Account autorizzati',
+      'gal.5.acc.desc': '2 familiari',
+      'gal.5.danger.title': 'Zona pericolo',
+      'gal.5.danger.desc': 'Rigenera token, elimina',
+      'gal.5.quick.title': 'Bottoni rapidi',
+      'gal.5.quick.desc': 'Mostra «Sto bene» e «Aiuto» in cima alla home',
+      'gal.5.widget.title': 'Widget Bottoni Rapidi attivo',
+      'gal.5.widget.desc': 'Per rimuoverlo, tienilo premuto sulla home',
+      'gal.5.cap.title': 'Capability',
+      'gal.5.cap.desc': 'Foto, audio, ringer',
+      'gal.5.qh.title': 'Quiet hours',
+      'gal.5.qh.desc': 'Quando bloccare foto/audio',
+      'gal.5.zone.title': 'Zona monitorata',
+      'gal.5.zone.desc': 'Avvisi nella fascia oraria e comando /casa',
+      'gal.5.audit.title': 'Storico',
+      'gal.5.audit.desc': 'Tutti gli eventi',
+      'gal.widget.title': 'Widget home-screen',
+      'gal.widget.desc': '“Sto bene” e “Aiuto” direttamente sulla home Android — nessuna app da aprire.',
+      'gal.widget.fine': 'Sto bene',
+      'gal.widget.help': 'Aiuto',
+      'gal.zone.title': 'Zona monitorata',
+      'gal.zone.intro': 'Avvisa la famiglia se Marco esce dalla zona monitorata nella fascia oraria. Gestito da Android GeofencingClient.',
+      'gal.zone.posLabel': 'POSIZIONE',
+      'gal.zone.radiusLabel': 'RAGGIO',
+      'gal.zone.windowLabel': 'FASCIA ORARIA',
+      'gal.zone.statusLabel': 'STATO',
+      'gal.zone.gps': 'Aggiorna con GPS',
+      'gal.zone.radiusSub': 'Raggio della zona',
+      'gal.zone.when': 'Quando avvisare',
+      'gal.zone.whenSub': 'Alert solo se esce in questa fascia',
+      'gal.zone.from': 'Inizio',
+      'gal.zone.to': 'Fine',
+      'gal.zone.active': 'Geofence attivo',
+      'gal.zone.activeSub': 'Richiede permesso «posizione sempre»',
+      'gal.zone.cap.title': 'Zona monitorata',
+      'gal.zone.cap.desc': 'Anteprima mappa, raggio e fascia oraria — in app o via comando /casa.',
       'gal.5.barTitle': 'Impostazioni',
       'gal.5.sectionBot': 'BOT',
       'gal.5.sectionBeh': 'COMPORTAMENTO',
@@ -1856,8 +2547,8 @@
       'footer.madeWith': 'fatta con cura',
       'footer.platform': 'Solo Android · sideload',
 
-      'legal.title': 'Una nota sulla responsabilità',
-      'legal.body': 'Family Tracker è un\'app gratuita e senza scopo di lucro che ho creato per la mia famiglia e che ho deciso di condividere. È fornita "così com\'è", senza garanzie di alcun tipo, e non posso assumermi responsabilità per il suo utilizzo. Usala solo dove c\'è consenso documentato — per minori sotto la tua responsabilità genitoriale, o per familiari anziani con il loro accordo. Non è uno strumento per sorvegliare nessun altro.',
+      'legal.title': 'Responsabilità · privacy · uso lecito',
+      'legal.body': '<strong>Nessuna garanzia.</strong> Family Tracker è un progetto gratuito, open-source e senza scopo di lucro. È fornito "COSÌ COM\'È", senza garanzie di alcun tipo — esplicite o implicite — incluse commerciabilità, idoneità a uno scopo specifico o continuità di funzionamento. L\'autore e i contributori non sono responsabili per danni, perdita di dati, mancato recapito di avvisi o qualsiasi conseguenza derivante dall\'uso dell\'app.<br/><br/><strong>Solo per usi leciti.</strong> Sei l\'unico responsabile dell\'installazione e configurazione dell\'app nel rispetto delle leggi della tua giurisdizione — tra cui il GDPR europeo, le normative nazionali sulla privacy e sulle telecomunicazioni, e le regole sulla registrazione di audio e immagini. L\'app deve essere installata solo su un dispositivo il cui utente abbia dato consenso informato e documentato (ad esempio: te stesso/a; un minore sotto la tua responsabilità genitoriale; un familiare adulto che ne sia a conoscenza e d\'accordo). Usarla per monitorare altre persone a loro insaputa o senza il loro consenso è illecito nella maggior parte degli ordinamenti ed è esplicitamente al di fuori dell\'uso previsto di questo software.<br/><br/><strong>Nessun dato raccolto dall\'autore.</strong> Family Tracker non ha un backend proprietario. L\'app comunica direttamente con le API del Bot di Telegram; l\'autore non ha accesso ai tuoi dati, al tuo bot, ai media o alla tua posizione, e non gestisce alcun servizio che conservi informazioni degli utenti. A tutti i dati instradati sulla piattaforma Telegram si applica la privacy policy di Telegram stessa.<br/><br/><strong>Marchi.</strong> "Telegram" e "Android" sono marchi dei rispettivi proprietari e sono citati qui solo a scopo descrittivo. Questo progetto non è affiliato, sponsorizzato o approvato da nessuno di tali soggetti.<br/><br/><strong>Distribuzione.</strong> Distribuita via sideload da un repository pubblico GitHub con licenza MIT. Scaricando e installando l\'APK accetti integralmente questi termini e la licenza MIT.',
     },
   };
 
@@ -1948,6 +2639,119 @@
     });
   }, { threshold: 0.2 });
   flowIo.observe(howSection);
+
+  // ============================================================
+  // Gallery carousel
+  // The scroller was always there (overflow-x: auto + scroll-snap), but
+  // visitors didn't realise it scrolled. We add:
+  //   - prev/next arrows that scroll by one item width,
+  //   - pagination dots that reflect which item is centered,
+  //   - keyboard arrow-key support when the carousel is focused,
+  //   - drag-to-scroll on desktop (mouse-down + move).
+  // Touch swipe already works via native overflow scroll.
+  // ============================================================
+  (function setupGallery() {
+    const scroller = document.querySelector('.gallery-scroll');
+    if (!scroller) return;
+    const prevBtn = document.querySelector('.gallery-nav.prev');
+    const nextBtn = document.querySelector('.gallery-nav.next');
+    const dotsHost = document.querySelector('.gallery-dots');
+    const items = Array.from(scroller.querySelectorAll('.gallery-item'));
+    if (items.length === 0) return;
+
+    // Build one dot per item.
+    if (dotsHost) {
+      items.forEach((_, i) => {
+        const dot = document.createElement('button');
+        dot.type = 'button';
+        dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+        dot.addEventListener('click', () => scrollToIndex(i));
+        dotsHost.appendChild(dot);
+      });
+    }
+    const dots = dotsHost ? Array.from(dotsHost.querySelectorAll('button')) : [];
+
+    function step() {
+      // Distance between item starts — width plus the flex gap (32px).
+      const first = items[0];
+      const next  = items[1];
+      if (next) return next.offsetLeft - first.offsetLeft;
+      return first.getBoundingClientRect().width + 32;
+    }
+
+    function currentIndex() {
+      // The item whose center is closest to the scroller center.
+      const center = scroller.scrollLeft + scroller.clientWidth / 2;
+      let best = 0, bestDist = Infinity;
+      items.forEach((el, i) => {
+        const c = el.offsetLeft + el.offsetWidth / 2;
+        const d = Math.abs(c - center);
+        if (d < bestDist) { bestDist = d; best = i; }
+      });
+      return best;
+    }
+
+    function scrollToIndex(i) {
+      i = Math.max(0, Math.min(items.length - 1, i));
+      const target = items[i];
+      const left = target.offsetLeft - (scroller.clientWidth - target.offsetWidth) / 2;
+      scroller.scrollTo({ left: left, behavior: 'smooth' });
+    }
+
+    function syncChrome() {
+      const idx = currentIndex();
+      dots.forEach((d, i) => d.classList.toggle('active', i === idx));
+      if (prevBtn) prevBtn.disabled = scroller.scrollLeft <= 2;
+      if (nextBtn) nextBtn.disabled = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 2;
+    }
+
+    prevBtn && prevBtn.addEventListener('click', () => scrollToIndex(currentIndex() - 1));
+    nextBtn && nextBtn.addEventListener('click', () => scrollToIndex(currentIndex() + 1));
+
+    // Throttle the sync to one rAF per scroll tick so dot updates feel
+    // responsive without hammering the layout while a smooth-scroll
+    // animation is mid-flight.
+    let raf = null;
+    scroller.addEventListener('scroll', () => {
+      if (raf) return;
+      raf = requestAnimationFrame(() => { raf = null; syncChrome(); });
+    });
+    window.addEventListener('resize', syncChrome);
+
+    // Keyboard support when focus is on the scroller / nav buttons.
+    scroller.tabIndex = 0;
+    scroller.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft')  { e.preventDefault(); scrollToIndex(currentIndex() - 1); }
+      if (e.key === 'ArrowRight') { e.preventDefault(); scrollToIndex(currentIndex() + 1); }
+    });
+
+    // Desktop mouse drag-to-scroll. Touch is already handled natively.
+    let isDown = false, startX = 0, startScroll = 0, moved = false;
+    scroller.addEventListener('mousedown', (e) => {
+      isDown = true; moved = false;
+      startX = e.pageX;
+      startScroll = scroller.scrollLeft;
+      scroller.style.scrollSnapType = 'none';
+      scroller.style.cursor = 'grabbing';
+    });
+    window.addEventListener('mousemove', (e) => {
+      if (!isDown) return;
+      const dx = e.pageX - startX;
+      if (Math.abs(dx) > 3) moved = true;
+      scroller.scrollLeft = startScroll - dx;
+    });
+    window.addEventListener('mouseup', () => {
+      if (!isDown) return;
+      isDown = false;
+      scroller.style.cursor = '';
+      // Re-enable scroll-snap and let it pull to the nearest snap point.
+      scroller.style.scrollSnapType = '';
+      if (moved) scrollToIndex(currentIndex());
+    });
+    scroller.style.cursor = 'grab';
+
+    syncChrome();
+  })();
 
   // ============================================================
   // Latest-release APK: update download buttons + QR dynamically

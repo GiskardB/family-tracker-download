@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#F7F4EE">
-  <title>Configura casa · Family Tracker</title>
+  <title>Zona monitorata · Family Tracker</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <script>
     // Signal "ready" + expand to fullscreen as EARLY as possible.
@@ -61,10 +61,48 @@
       margin: 0 auto;
       padding-bottom: 96px;
     }
+    .header-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 8px 0 4px;
+    }
     h1 {
       font-size: 22px;
       font-weight: 700;
-      margin: 8px 0 4px;
+      margin: 0;
+      flex: 1;
+      min-width: 0;
+    }
+    /* EN/IT switch — pill toggle, top-right of the page header */
+    .lang-switch {
+      display: inline-flex;
+      background: rgba(20, 26, 40, 0.06);
+      border-radius: 999px;
+      padding: 3px;
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .lang-switch button {
+      background: transparent;
+      border: none;
+      padding: 5px 10px;
+      border-radius: 999px;
+      color: var(--text-mute);
+      font: inherit;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s;
+    }
+    .lang-switch button.active {
+      background: var(--accent);
+      color: var(--accent-fg);
+    }
+    .lang-switch button:hover:not(.active) {
+      color: var(--text);
     }
     .intro {
       color: var(--text-mute);
@@ -251,16 +289,28 @@
 </head>
 <body>
 <main>
-  <h1>Configura casa</h1>
-  <p class="intro">
-    Imposta la posizione, il raggio della zona casa e la fascia notturna in cui ricevere
-    gli avvisi se il dispositivo esce di casa.
+  <!-- Title + language switch.
+       The page is opened both from Italian and English Telegram clients
+       (the bot speaks both depending on the user's app locale), so the
+       form has its own EN/IT toggle and remembers the choice in
+       localStorage between visits. -->
+  <div class="header-row">
+    <h1 data-i18n="title">Zona monitorata</h1>
+    <div class="lang-switch" role="tablist" aria-label="Language">
+      <button type="button" data-lang="it" class="active">IT</button>
+      <button type="button" data-lang="en">EN</button>
+    </div>
+  </div>
+  <p class="intro" data-i18n="intro">
+    Imposta la posizione, il raggio della zona monitorata e la fascia oraria
+    in cui ricevere gli avvisi se il dispositivo esce dalla zona.
   </p>
 
   <!-- Address card -->
   <div class="card">
-    <div class="label">Indirizzo *</div>
+    <div class="label" data-i18n="address.label">Indirizzo *</div>
     <input id="address" class="input" type="text" autocomplete="off"
+           data-i18n-placeholder="address.placeholder"
            placeholder="Es. Via Roma 1, Torino"
            autocapitalize="words" spellcheck="false">
     <div id="results" class="results" style="display:none"></div>
@@ -269,27 +319,27 @@
 
   <!-- Radius card -->
   <div class="card">
-    <div class="label">Raggio della zona casa *</div>
+    <div class="label" data-i18n="radius.label">Raggio della zona monitorata *</div>
     <div class="radius-row">
-      <button class="step-btn" id="radius-minus" aria-label="Diminuisci">−</button>
+      <button class="step-btn" id="radius-minus" data-i18n-aria="radius.minus" aria-label="Diminuisci">−</button>
       <div class="radius-display">
         <span class="radius-num" id="radius-num">100</span>
-        <span class="radius-unit">metri</span>
+        <span class="radius-unit" data-i18n="radius.unit">metri</span>
       </div>
-      <button class="step-btn" id="radius-plus" aria-label="Aumenta">+</button>
+      <button class="step-btn" id="radius-plus" data-i18n-aria="radius.plus" aria-label="Aumenta">+</button>
     </div>
   </div>
 
-  <!-- Night window card -->
+  <!-- Time window card -->
   <div class="card">
-    <div class="label">Fascia notturna *</div>
+    <div class="label" data-i18n="window.label">Fascia oraria *</div>
     <div class="row">
       <div>
-        <div class="label">Dalle</div>
+        <div class="label" data-i18n="window.from">Dalle</div>
         <input id="start" class="input" type="time" value="22:00" required>
       </div>
       <div>
-        <div class="label">Alle</div>
+        <div class="label" data-i18n="window.to">Alle</div>
         <input id="end" class="input" type="time" value="06:00" required>
       </div>
     </div>
@@ -299,8 +349,8 @@
   <div class="card">
     <div class="toggle-row">
       <div>
-        <div class="title">Geofence attivo</div>
-        <div class="sub">Riceverai un avviso se uscirai di casa nella fascia notturna</div>
+        <div class="title" data-i18n="enabled.title">Geofence attivo</div>
+        <div class="sub" data-i18n="enabled.sub">Riceverai un avviso se uscirai dalla zona nella fascia oraria</div>
       </div>
       <label class="switch">
         <input id="enabled" type="checkbox" checked>
@@ -318,7 +368,7 @@
      MainButton at the very bottom of the chrome is the canonical CTA
      and showing both produces two visually identical buttons stacked. -->
 <div class="save-bar" id="save-bar">
-  <button id="save-btn" class="btn-primary" type="button">Salva e applica</button>
+  <button id="save-btn" class="btn-primary" type="button" data-i18n="save">Salva e applica</button>
 </div>
 
 <script>
@@ -333,6 +383,118 @@
     // Telegram MainButton replaces it.
     document.documentElement.classList.add('in-telegram');
   }
+
+  // ────────────────────────────────────────────────────────────────
+  // Inline i18n.
+  //
+  // The page is reachable from both Italian and English Telegram
+  // clients (the /casa command works in both languages and the bot
+  // hands off this WebApp regardless). We don't want a separate HTML
+  // file per language, so the page carries both strings and a top-
+  // right pill toggle. The chosen language is persisted in
+  // localStorage so a familiare who prefers English doesn't have to
+  // re-pick every time the form is reopened.
+  // ────────────────────────────────────────────────────────────────
+  const I18N = {
+    it: {
+      title:               'Zona monitorata',
+      intro:               'Imposta la posizione, il raggio della zona monitorata e la fascia oraria in cui ricevere gli avvisi se il dispositivo esce dalla zona.',
+      'address.label':     'Indirizzo *',
+      'address.placeholder': 'Es. Via Roma 1, Torino',
+      'radius.label':      'Raggio della zona monitorata *',
+      'radius.unit':       'metri',
+      'radius.minus':      'Diminuisci',
+      'radius.plus':       'Aumenta',
+      'window.label':      'Fascia oraria *',
+      'window.from':       'Dalle',
+      'window.to':         'Alle',
+      'enabled.title':     'Geofence attivo',
+      'enabled.sub':       'Riceverai un avviso se uscirai dalla zona nella fascia oraria',
+      save:                'Salva e applica',
+      // status / error strings
+      searching:           'Sto cercando…',
+      noResults:           q => `Nessun risultato per «${q}». Prova a essere più specifico.`,
+      noResultName:        'Risultato senza nome',
+      errPickAddress:      'Scegli un indirizzo dai suggerimenti.',
+      errTimeWindow:       "Inserisci sia l'ora di inizio sia quella di fine della fascia oraria.",
+      errTelegram:         msg => 'Errore Telegram: ' + msg,
+      errNotInTelegram:    payload => 'Aperto fuori da Telegram. Dati: ' + payload,
+    },
+    en: {
+      title:               'Monitored zone',
+      intro:               'Set the location, the radius of the monitored zone and the time window in which you want to be alerted if the device leaves the zone.',
+      'address.label':     'Address *',
+      'address.placeholder': 'e.g. 1 Roma St, Turin',
+      'radius.label':      'Monitored-zone radius *',
+      'radius.unit':       'meters',
+      'radius.minus':      'Decrease',
+      'radius.plus':       'Increase',
+      'window.label':      'Time window *',
+      'window.from':       'From',
+      'window.to':         'To',
+      'enabled.title':     'Geofence active',
+      'enabled.sub':       "You'll get an alert if the device leaves the zone during the time window",
+      save:                'Save and apply',
+      searching:           'Searching…',
+      noResults:           q => `No results for "${q}". Try being more specific.`,
+      noResultName:        'Unnamed result',
+      errPickAddress:      'Pick an address from the suggestions.',
+      errTimeWindow:       'Please set both the start and end of the time window.',
+      errTelegram:         msg => 'Telegram error: ' + msg,
+      errNotInTelegram:    payload => 'Opened outside Telegram. Data: ' + payload,
+    },
+  };
+
+  // Active language — initialised from localStorage or, on first visit,
+  // from the Telegram WebApp's reported language (falls back to the
+  // browser's navigator.language, then to "it" as the bot's default).
+  let LANG = (function pickInitialLang() {
+    try {
+      const stored = localStorage.getItem('ft.casaLang');
+      if (stored === 'it' || stored === 'en') return stored;
+    } catch (_) {}
+    const tgLang = (tg && tg.initDataUnsafe && tg.initDataUnsafe.user && tg.initDataUnsafe.user.language_code) || '';
+    const navLang = (navigator.language || '').toLowerCase();
+    if ((tgLang || navLang).startsWith('en')) return 'en';
+    return 'it';
+  })();
+
+  function t(key) {
+    return (I18N[LANG] && I18N[LANG][key]) || (I18N.it && I18N.it[key]) || key;
+  }
+
+  function applyI18n() {
+    document.documentElement.setAttribute('lang', LANG);
+    document.title = t('title') + ' · Family Tracker';
+    // Text nodes
+    document.querySelectorAll('[data-i18n]').forEach(el => {
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    // Placeholders
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      el.setAttribute('placeholder', t(el.getAttribute('data-i18n-placeholder')));
+    });
+    // ARIA labels
+    document.querySelectorAll('[data-i18n-aria]').forEach(el => {
+      el.setAttribute('aria-label', t(el.getAttribute('data-i18n-aria')));
+    });
+    // Language pill state
+    document.querySelectorAll('.lang-switch button').forEach(b => {
+      b.classList.toggle('active', b.dataset.lang === LANG);
+    });
+    // Re-sync the Telegram MainButton label if we're inside Telegram.
+    if (tg && tg.MainButton) {
+      tg.MainButton.setText(t('save'));
+    }
+  }
+
+  document.querySelectorAll('.lang-switch button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      LANG = btn.dataset.lang;
+      try { localStorage.setItem('ft.casaLang', LANG); } catch (_) {}
+      applyI18n();
+    });
+  });
 
   // ────────────────────────────────────────────────────────────────
   // Address autocomplete (Photon — same backend the app uses)
@@ -402,7 +564,7 @@
           if (city) parts.push(city);
           if (p.country) parts.push(p.country);
           return {
-            displayName: parts.join(' · ') || 'Risultato senza nome',
+            displayName: parts.join(' · ') || t('noResultName'),
             lat: f.geometry.coordinates[1],
             lng: f.geometry.coordinates[0],
           };
@@ -421,11 +583,11 @@
       $results.style.display = 'none';
       return;
     }
-    showStatus('Sto cercando…');
+    showStatus(t('searching'));
     searchTimer = setTimeout(async () => {
       const items = await searchAddress(q);
       if (items.length === 0) {
-        showStatus(`Nessun risultato per «${q}». Prova a essere più specifico.`);
+        showStatus(t('noResults')(q));
       } else {
         showResults(items);
       }
@@ -470,17 +632,21 @@
   $saveBtn.addEventListener('click', () => {
     clearError();
     if (!pickedLocation) {
-      setError('Scegli un indirizzo dai suggerimenti.');
+      setError(t('errPickAddress'));
       return;
     }
     const start = (document.getElementById('start')).value;
     const end = (document.getElementById('end')).value;
     if (!start || !end) {
-      setError('Inserisci sia l\'ora di inizio sia quella di fine della fascia notturna.');
+      setError(t('errTimeWindow'));
       return;
     }
     const enabled = (document.getElementById('enabled')).checked;
 
+    // The payload kind stays "casa" so the existing native handler in
+    // the FamilyTracker app keeps working unchanged — only the
+    // user-visible labels were renamed to "Zona monitorata" /
+    // "Fascia oraria".
     const payload = {
       v: 1,
       kind: 'casa',
@@ -491,6 +657,7 @@
       start: start,
       end: end,
       enabled: enabled,
+      lang: LANG,
     };
     if (tg && typeof tg.sendData === 'function') {
       try {
@@ -500,11 +667,11 @@
         // ever changes.
         tg.close();
       } catch (e) {
-        setError('Errore Telegram: ' + (e && e.message ? e.message : e));
+        setError(t('errTelegram')(e && e.message ? e.message : e));
       }
     } else {
       // Local debug fallback (opened in a normal browser instead of Telegram).
-      setError('Aperto fuori da Telegram. Dati: ' + JSON.stringify(payload));
+      setError(t('errNotInTelegram')(JSON.stringify(payload)));
     }
   });
 
@@ -514,10 +681,15 @@
   // Telegram theme variant. Optional.
   // ────────────────────────────────────────────────────────────────
   if (tg && tg.MainButton) {
-    tg.MainButton.setText('Salva e applica');
+    tg.MainButton.setText(I18N[LANG].save);
     tg.MainButton.show();
     tg.MainButton.onClick(() => $saveBtn.click());
   }
+
+  // Apply translations on first paint AFTER all wiring is in place so
+  // the MainButton picks up the right label and the language pill
+  // reflects the initial choice.
+  applyI18n();
 </script>
 </body>
 </html>
